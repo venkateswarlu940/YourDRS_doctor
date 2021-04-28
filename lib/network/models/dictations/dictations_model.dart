@@ -93,6 +93,7 @@ class DictationItem {
   int externalDocumentTypeId;
   String description;
   String appointmentProvider;
+  String dictationType;
 
   DictationItem(
       {this.header,
@@ -135,7 +136,8 @@ class DictationItem {
         this.isEmergencyAddOn,
         this.externalDocumentTypeId,
         this.description,
-        this.appointmentProvider});
+        this.appointmentProvider,
+      this.dictationType});
 
   DictationItem.fromJson(Map<String, dynamic> json) {
     header =
@@ -185,6 +187,7 @@ class DictationItem {
     externalDocumentTypeId = json['externalDocumentTypeId'];
     description = json['description'];
     appointmentProvider = json['appointmentProvider'];
+    dictationType = json['dictationType'];
   }
 
   Map<String, dynamic> toJson() {
@@ -234,6 +237,7 @@ class DictationItem {
     data['externalDocumentTypeId'] = this.externalDocumentTypeId;
     data['description'] = this.description;
     data['appointmentProvider'] = this.appointmentProvider;
+    data['dictationType'] = this.dictationType;
     return data;
   }
 }

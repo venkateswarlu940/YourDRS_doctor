@@ -74,7 +74,6 @@ class Services {
       "providerId": providerId ?? null,
       "page": pageKey ?? 1
     };
-    // print(json);
 
   Response response;
 Dio dio = new Dio();
@@ -112,6 +111,7 @@ Dio dio = new Dio();
 // ------> getLocation service method also maintaining exception handling
 
   Future<Locations> getLocation() async {
+    var client = http.Client();
     var memberId =
         await MySharedPreferences.instance.getStringValue(Keys.memberId);
     try {
@@ -121,7 +121,7 @@ Dio dio = new Dio();
       };
       String queryString = Uri(queryParameters: queryParams).query;
       var requestUrl = endpointUrl + '?' + queryString;
-      final response = await http.get(Uri.encodeFull(requestUrl),
+      final response = await client.get(Uri.encodeFull(requestUrl),
           headers: {"Accept": "application/json"});
 //checking the condition statusCode success or not if success get data or throw the error <---------
       if (response.statusCode == 200) {
@@ -133,6 +133,8 @@ Dio dio = new Dio();
       }
     } catch (e) {
       throw Exception(e.toString());
+    }finally{
+      client.close();
     }
   }
 
@@ -144,6 +146,7 @@ Dio dio = new Dio();
 
 // ------> getProviders service also maintaining exception handling
   Future<Providers> getProviders() async {
+    var client =http.Client();
     var memberId =
         await MySharedPreferences.instance.getStringValue(Keys.memberId);
     try {
@@ -153,7 +156,7 @@ Dio dio = new Dio();
       };
       String queryString = Uri(queryParameters: queryParams).query;
       var requestUrl = endpointUrl + '?' + queryString;
-      final response = await http.get(Uri.encodeFull(requestUrl),
+      final response = await client.get(Uri.encodeFull(requestUrl),
           headers: {"Accept": "application/json"});
 // ------> checking the condition statusCode success or not if success get data or throw the error <---------
       if (response.statusCode == 200) {
@@ -165,6 +168,8 @@ Dio dio = new Dio();
       }
     } catch (e) {
       throw Exception(e.toString());
+    }finally{
+      client.close();
     }
   }
 
@@ -175,11 +180,12 @@ Dio dio = new Dio();
   }
 
   Future<Documenttype> getDocumenttype() async {
+    var client = http.Client();
     try {
       var endpointUrl = ApiUrlConstants.getDocumenttype;
 
       var requestUrl = endpointUrl;
-      final response = await http.get(Uri.encodeFull(requestUrl),
+      final response = await client.get(Uri.encodeFull(requestUrl),
           headers: {"Accept": "application/json"});
       if (response.statusCode == 200) {
         Documenttype document = parseDocuments(response.body);
@@ -190,6 +196,8 @@ Dio dio = new Dio();
       }
     } catch (e) {
       throw Exception(e.toString());
+    }finally{
+      client.close();
     }
   }
 

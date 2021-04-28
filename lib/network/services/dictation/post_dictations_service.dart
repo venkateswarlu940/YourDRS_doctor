@@ -1,14 +1,13 @@
 import 'dart:convert';
-import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
+
 import 'package:YOURDRS_FlutterAPP/common/app_constants.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_log_helper.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_strings.dart';
 import 'package:YOURDRS_FlutterAPP/network/models/dictations/post_dictations_model.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
 
 ////service class starts from here
-class PostDictationsService {
+class PostDictationsService with AppLogHelper{
   // ignore: missing_return
   Future<PostDictationsModel> postApiMethod(
       int memberid,
@@ -79,6 +78,7 @@ class PostDictationsService {
 
     ///checking  response status of Api on success and failure
     try {
+      // printLog("Api request json ${jsonEncode(json)}");
       http.Response response = await client.post(
         apiUrl,
         body: jsonEncode(json),
@@ -86,10 +86,11 @@ class PostDictationsService {
           'Content-Type': 'application/json; charset=UTF-8',
         },
       );
+
       var jsonResponse = jsonDecode(response.body);
       return PostDictationsModel.fromJson(jsonResponse);
     } catch (e) {
-      print("${e.toString()}");
+      printLog("${e.toString()}");
     }
     finally{
       client.close();

@@ -1,31 +1,33 @@
 class GetAllExternalAttachments {
+  GetAllExternalAttachments({
+    this.header,
+    this.externalDocumentList,
+    this.pagingInfo,
+  });
+
   Header header;
   List<ExternalDocumentList> externalDocumentList;
+  PagingInfo pagingInfo;
 
-  GetAllExternalAttachments({this.header, this.externalDocumentList});
+  factory GetAllExternalAttachments.fromJson(Map<String, dynamic> json) =>
+      GetAllExternalAttachments(
+        header: json["header"] == null ? null : Header.fromJson(json["header"]),
+        externalDocumentList: json["externalDocumentList"] == null
+            ? null
+            : List<ExternalDocumentList>.from(json["externalDocumentList"]
+                .map((x) => ExternalDocumentList.fromJson(x))),
+        pagingInfo: json["pagingInfo"] == null
+            ? null
+            : PagingInfo.fromJson(json["pagingInfo"]),
+      );
 
-  GetAllExternalAttachments.fromJson(Map<String, dynamic> json) {
-    header =
-        json['header'] != null ? new Header.fromJson(json['header']) : null;
-    if (json['externalDocumentList'] != null) {
-      externalDocumentList = new List<ExternalDocumentList>();
-      json['externalDocumentList'].forEach((v) {
-        externalDocumentList.add(new ExternalDocumentList.fromJson(v));
-      });
-    }
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    if (this.header != null) {
-      data['header'] = this.header.toJson();
-    }
-    if (this.externalDocumentList != null) {
-      data['externalDocumentList'] =
-          this.externalDocumentList.map((v) => v.toJson()).toList();
-    }
-    return data;
-  }
+  Map<String, dynamic> toJson() => {
+        "header": header == null ? null : header.toJson(),
+        "externalDocumentList": externalDocumentList == null
+            ? null
+            : List<dynamic>.from(externalDocumentList.map((x) => x.toJson())),
+        "pagingInfo": pagingInfo == null ? null : pagingInfo.toJson(),
+      };
 }
 
 class Header {
@@ -189,3 +191,28 @@ class Attachments {
     return toJson().toString();
   }
 }
+
+class PagingInfo {
+  PagingInfo({
+    this.totalItems,
+    this.itemsPerPage,
+    this.currentPage,
+  });
+
+  int totalItems;
+  int itemsPerPage;
+  int currentPage;
+
+  factory PagingInfo.fromJson(Map<String, dynamic> json) => PagingInfo(
+    totalItems: json["totalItems"] == null ? null : json["totalItems"],
+    itemsPerPage: json["itemsPerPage"] == null ? null : json["itemsPerPage"],
+    currentPage: json["currentPage"] == null ? null : json["currentPage"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "totalItems": totalItems == null ? null : totalItems,
+    "itemsPerPage": itemsPerPage == null ? null : itemsPerPage,
+    "currentPage": currentPage == null ? null : currentPage,
+  };
+}
+

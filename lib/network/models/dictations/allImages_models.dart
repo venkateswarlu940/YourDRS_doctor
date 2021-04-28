@@ -1,21 +1,21 @@
-class GetExternalPhotos {
+class GetAllImages {
+  String attachmentNamesList;
   Header header;
-  String fileName;
 
-  GetExternalPhotos({this.header, this.fileName});
+  GetAllImages({this.attachmentNamesList, this.header});
 
-  GetExternalPhotos.fromJson(Map<String, dynamic> json) {
+  GetAllImages.fromJson(Map<String, dynamic> json) {
+    attachmentNamesList = json['attachmentNamesList'];
     header =
     json['header'] != null ? new Header.fromJson(json['header']) : null;
-    fileName = json['fileName'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['attachmentNamesList'] = this.attachmentNamesList;
     if (this.header != null) {
       data['header'] = this.header.toJson();
     }
-    data['fileName'] = this.fileName;
     return data;
   }
 }
@@ -23,7 +23,7 @@ class GetExternalPhotos {
 class Header {
   String status;
   String statusCode;
-  String statusMessage;
+  Null statusMessage;
 
   Header({this.status, this.statusCode, this.statusMessage});
 
@@ -39,10 +39,5 @@ class Header {
     data['statusCode'] = this.statusCode;
     data['statusMessage'] = this.statusMessage;
     return data;
-  }
-  @override
-  String toString() {
-    // TODO: implement toString
-    return toJson().toString();
   }
 }

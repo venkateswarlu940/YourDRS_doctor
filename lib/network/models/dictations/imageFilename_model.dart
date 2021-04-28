@@ -1,13 +1,19 @@
-class GetExternalPhotos {
+import 'dart:convert';
+
+class GetFileNames {
   Header header;
-  String fileName;
+  String content;
+  String name;
+  String attachmentType;
 
-  GetExternalPhotos({this.header, this.fileName});
+  GetFileNames({this.header, this.content, this.name, this.attachmentType});
 
-  GetExternalPhotos.fromJson(Map<String, dynamic> json) {
+  GetFileNames.fromJson(Map<String, dynamic> json) {
     header =
     json['header'] != null ? new Header.fromJson(json['header']) : null;
-    fileName = json['fileName'];
+    content = json['content'];
+    name = json['name'];
+    attachmentType = json['attachmentType'];
   }
 
   Map<String, dynamic> toJson() {
@@ -15,7 +21,9 @@ class GetExternalPhotos {
     if (this.header != null) {
       data['header'] = this.header.toJson();
     }
-    data['fileName'] = this.fileName;
+    data['content'] = this.content;
+    data['name'] = this.name;
+    data['attachmentType'] = this.attachmentType;
     return data;
   }
 }
@@ -43,6 +51,6 @@ class Header {
   @override
   String toString() {
     // TODO: implement toString
-    return toJson().toString();
+    return json.toString();
   }
 }

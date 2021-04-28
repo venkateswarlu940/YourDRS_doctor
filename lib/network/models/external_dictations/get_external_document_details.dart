@@ -10,7 +10,7 @@ class GetExternalDocumentDetails {
   bool isEmergencyAddOn;
   int externalDocumentTypeId;
   int createdBy;
-  List<Attachments> attachments;
+  List<ExternalAttachmentsDoc> attachments;
   String description;
   String displayFileName;
   String createdDate;
@@ -58,9 +58,9 @@ class GetExternalDocumentDetails {
     externalDocumentTypeId = json['externalDocumentTypeId'];
     createdBy = json['createdBy'];
     if (json['attachments'] != null) {
-      attachments = new List<Attachments>();
+      attachments = new List<ExternalAttachmentsDoc>();
       json['attachments'].forEach((v) {
-        attachments.add(new Attachments.fromJson(v));
+        attachments.add(new ExternalAttachmentsDoc.fromJson(v));
       });
     }
     description = json['description'];
@@ -127,15 +127,15 @@ class Header {
   }
 }
 
-class Attachments {
+class ExternalAttachmentsDoc {
   Header header;
   String content;
   String name;
   String attachmentType;
 
-  Attachments({this.header, this.content, this.name, this.attachmentType});
+  ExternalAttachmentsDoc({this.header, this.content, this.name, this.attachmentType});
 
-  Attachments.fromJson(Map<String, dynamic> json) {
+  ExternalAttachmentsDoc.fromJson(Map<String, dynamic> json) {
     header =
     json['header'] != null ? new Header.fromJson(json['header']) : null;
     content = json['content'];

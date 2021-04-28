@@ -8,11 +8,10 @@ import 'dart:convert';
 /// Get all dictations api service class
 class AllDictationService {
   var client = http.Client();
-  Future<Dictations> getDictations(int dictationId, int appointmentId) async {
+  Future<Dictations> getDictations(int appointmentId) async {
     try {
       var endpointUrl = ApiUrlConstants.dictations;
       Map<String, dynamic> queryParams = {
-        'TranscriptionId': '$dictationId',
         'AppointmentId': '$appointmentId',
       };
       String queryString = Uri(queryParameters: queryParams).query;

@@ -5,7 +5,7 @@ import 'package:YOURDRS_FlutterAPP/network/models/manual_dictations/external_dic
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 class ExternalAttachmentPost {
-  var client=http.Client();
+ // var client=http.Client();
   Future<SaveExternalDictationOrAttachment> postApiServiceMethod(
       int selectedPracticeId,
       int locationId,
@@ -20,7 +20,7 @@ class ExternalAttachmentPost {
      String content,
      String name,
    String attacmentType,
-    var photoListOfGallery
+      var photoListOfGallery
       ) async {
     DateTime defaultDate = DateTime.now();
     String apiUrl = ApiUrlConstants.allDictationsAttachment;
@@ -64,7 +64,7 @@ class ExternalAttachmentPost {
       "displayFileName": null,
       "isW9Doc": true,
       "consolidatedDocExists": true,
-      "memberPhotos": photoListOfGallery,
+      "memberPhotos": photoListOfGallery??null,
       "photoNameList": null,
       "dictationTypeId": null,
       "nbrMemberId": null,
@@ -79,7 +79,7 @@ class ExternalAttachmentPost {
 print(json);
     //--------checking  response status of Api if it is success or failure
     try {
-      http.Response response = await client.post(
+      http.Response response = await http.post(
         apiUrl,
         body: jsonEncode(json),
         headers: <String, String>{
@@ -100,7 +100,7 @@ print(json);
       print("This Is => $e");
     }
     finally{
-      client.close();
+      // client.close();
     }
   }
 }

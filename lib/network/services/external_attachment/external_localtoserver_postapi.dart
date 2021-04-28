@@ -20,7 +20,7 @@ class ExternalAttachmentDataApi {
       String content,
       String name,
       String attacmentType,
-      //var photoListOfGallery
+      var photoListOfGallery
       ) async {
     DateTime defaultDate = DateTime.now();
     String apiUrl = ApiUrlConstants.allDictationsAttachment;
@@ -63,18 +63,19 @@ class ExternalAttachmentDataApi {
       "displayFileName": null,
       "isW9Doc": true,
       "consolidatedDocExists": true,
-      "memberPhotos": [
-        {
-          "header": {
-            "status": "string",
-            "statusCode": "string",
-            "statusMessage": "string"
-          },
-          "content":null,
-          "name": null,
-          "attachmentType": null
-        }
-      ],
+      "memberPhotos":photoListOfGallery ??null,
+      // [
+      //   {
+      //     "header": {
+      //       "status": "string",
+      //       "statusCode": "string",
+      //       "statusMessage": "string"
+      //     },
+      //     "content":null,
+      //     "name": null,
+      //     "attachmentType": null
+      //   }
+      // ],
       "photoNameList": null,
       "dictationTypeId": null,
       "nbrMemberId": null,
@@ -97,7 +98,7 @@ class ExternalAttachmentDataApi {
         },
       );
       var jsonResponsee = jsonDecode(response.body);
-      print(jsonResponsee);
+     print(jsonResponsee);
 
       if (response.statusCode == 200) {
         print("service success");

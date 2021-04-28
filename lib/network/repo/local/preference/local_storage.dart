@@ -45,4 +45,7 @@ class Keys {
   static const String episodeAppointmentRequestId ='episodeAppointmentRequestId';
   static const String memberRoleId = 'memberRoleId';
   static const String pin = 'pin';
+  static const String isItFirstTime="isItFirstTime";
+  static const String storedMemberPin="storedMemberPin";
+
 }

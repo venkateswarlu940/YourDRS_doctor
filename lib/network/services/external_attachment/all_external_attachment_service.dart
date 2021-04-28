@@ -13,6 +13,7 @@ class AllMyExternalAttachments {
   //-------------------External display name api
   Future<GetAllExternalAttachments> getMyAllExternalAttachemnts(
       _pageNumber) async {
+   // print('getMyAllExternalAttachemnts _pageNumber $_pageNumber');
     var memberId =
     await MySharedPreferences.instance.getStringValue(Keys.memberId);
     try {
@@ -30,22 +31,24 @@ class AllMyExternalAttachments {
       if (response.statusCode == 200) {
         GetAllExternalAttachments allExternalAttachment =
         parseAllExternalAttachment(response.body);
-        print(allExternalAttachment);
+      //  print(allExternalAttachment);
         return allExternalAttachment;
       }
     } on Exception catch (e) {
       print(e.toString);
     }
     finally{
-      client1.close();
+      // client1.close();
     }
+
+    return null;
   }
 
   static GetAllExternalAttachments parseAllExternalAttachment(
       String responseBody) {
     final GetAllExternalAttachments allExternalAttachment =
     GetAllExternalAttachments.fromJson(json.decode(responseBody));
-    print(allExternalAttachment);
+    //print(allExternalAttachment);
     return allExternalAttachment;
   }
 }

@@ -8,6 +8,7 @@ class PhotoList {
   String fileName;
   String physicalfilename;
   String createddate;
+  int uploadToServer;
 
   PhotoList(
       {this.id,
@@ -18,7 +19,8 @@ class PhotoList {
       this.attachmenttype,
       this.fileName,
       this.physicalfilename,
-      this.createddate});
+      this.createddate,
+        this.uploadToServer});
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{
@@ -31,6 +33,7 @@ class PhotoList {
       'physicalfilename': physicalfilename,
       'createdDate': createddate,
       'fileName': fileName,
+      'uploadedtoserver': uploadToServer
     };
     return map;
   }
@@ -46,6 +49,7 @@ class PhotoList {
     physicalfilename = map['physicalfilename'];
     createddate = map['createdDate'];
     fileName = map['fileName'];
+    uploadToServer=map['uploadedtoserver'];
   }
   String toString() {
     return toMap().toString();

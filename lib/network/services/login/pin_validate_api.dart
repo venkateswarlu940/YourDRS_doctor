@@ -5,19 +5,21 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class PinRepo {
-  Future<PinResponse> postApiMethod(String MemberId, String Pin) async {
+  Future<PinResponse> postApiMethod(String memberId, String pin) async {
+    var client = http.Client();
     try {
+      
       var endpointUrl = ApiUrlConstants.getUserValidate;
       Map<String, dynamic> queryParams = {
-        'MemberId': MemberId,
-        'Pin': Pin,
+        'MemberId': memberId,
+        'Pin': pin,
         "FingerPrintValidation": "false",
       };
       String queryString = Uri(queryParameters: queryParams).query;
       var requestUrl = endpointUrl + '?' + queryString;
       print('requestUrl $requestUrl');
 
-      final response = await http.get(Uri.encodeFull(requestUrl),
+      final response = await client.get(Uri.encodeFull(requestUrl),
           headers: {"Accept": "application/json"});
      // print(response.body);
 
@@ -28,13 +30,15 @@ class PinRepo {
       }
     } catch (e) {
       print(e.toString());
+      throw(e);
+    }   finally {
+      client.close();
     }
   }
 
   static PinResponse parsePinResponse(String responseBody) {
     final PinResponse pinResponse =
         PinResponse.fromJson(jsonDecode(responseBody));
-   // print(pinResponse);
     return pinResponse;
   }
 }

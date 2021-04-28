@@ -14,7 +14,7 @@ void main() async {
   var login = prefs.getString(Keys.isPINAvailable);
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
-    title: 'YOURDRS',
+    title: 'Your Doctors',
     home: login == null || login == "" ? SplashScreen() : VerifyPinScreen(),
     initialRoute: SplashScreen.routeName,
     onGenerateRoute: RouteGenerator.generateRoute,

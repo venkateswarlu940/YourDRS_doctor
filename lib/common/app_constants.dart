@@ -10,6 +10,7 @@ class AppConstants {
   static const phonePattern = r"(^(?:[+0]9)?[0-9]{10,12}$)";
   static const phoneCCPattern = r"(^(?:[+0]9)?[0-9]{1,4}$)";
   static const numberRegExp = r"^[0-9]*$";
+  static const ignoreSpace = "[ ]";
   static const nameRegExp = "[a-zA-Z\\ ]";
   static const dateNumRegExp = "[0-9\\-]";
 
@@ -26,6 +27,7 @@ class AppConstants {
   // Network
   static const apiTimeout = 30 * 1000; // 30 sec
   static const dioBaseUrl = "https://ydrsdevapi.yourdrs.com/";
+  // static const dioBaseUrl = "https://ydrsqaapi.yourdrs.com/";
 
   static const dioConnectTimeout = 30 * 1000; // 30 sec
   static const dioReceiveTimeout = 30 * 1000; // 30 sec

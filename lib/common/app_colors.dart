@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class CustomizedColors {
-  static const clrCyanBlueColor = Color.fromRGBO(30, 82, 163, 1);
+  static const clrCyanBlueColor = Color.fromRGBO(84, 157, 255, 1);
+  static const primaryBgColor = Color.fromRGBO(231, 233, 242, 1);
   static const clrGhostWhite = Color.fromRGBO(30, 82, 163, 1);
   static const primaryColor = clrCyanBlueColor;
   static const accentColor = clrCyanBlueColor;
@@ -18,6 +19,7 @@ class CustomizedColors {
   static const dictationPending = Color.fromRGBO(255, 30, 5, 1);
   static const dictationCompleted = Color.fromRGBO(25, 106, 22, 1);
   static const bookMarkIconColour = Color.fromRGBO(31, 187, 148, 1);
+  static const oldBookmarkIconColor = Colors.grey;
   //team 1 or Login screen
   static const login_screen_background = Color.fromRGBO(231, 232, 234, 1);
   static const your_text_color = Color.fromRGBO(107, 148, 220, 1);
@@ -52,7 +54,9 @@ class CustomizedColors {
   static const dialogCancelButton = Colors.grey;
   static const inactiveFgColorCustom = Color.fromRGBO(0, 0, 0, 1);
   static const activeRedColor = Colors.red;
-  static const divider = Colors.grey;
+  static const divider = Color.fromRGBO(200, 200, 200, 1);
+  static const buttonClrManualDictation = Color.fromRGBO(224, 224, 224, 1);
+  static const blueAppBarColor = Color.fromRGBO(7, 90, 200, 30);
   //
   static const waveColor = clrCyanBlueColor;
   static const iconColors = Color.fromRGBO(85, 85, 85, 1);
@@ -69,6 +73,7 @@ class CustomizedColors {
   static final waveBGColor = Colors.lightBlue[50];
   static const toastColor = clrCyanBlueColor;
   static const toastGreen = Color.fromRGBO(51, 174, 90, 1);
+  static const micBgColor = Colors.red;
 
   //External Attachments colours
   static const switchactiveColor = clrCyanBlueColor;
@@ -91,7 +96,6 @@ class CustomizedColors {
   static const customeTextColor = Colors.white;
   static const customeColor = Colors.grey;
 
-
   // Team 4
   static const appBarColor = clrCyanBlueColor;
   static const raisedButtonTextColor = clrCyanBlueColor;
@@ -102,6 +106,7 @@ class CustomizedColors {
   static const uploadedTextColor = Color.fromRGBO(108, 219, 151, 1);
   static final uploadFailTextColor = Colors.red;
   static const raisedBtnColor = Color.fromRGBO(239, 240, 249, 1);
-  static final cancelDictationTextColor =clrCyanBlueColor;
+  static final cancelDictationTextColor = clrCyanBlueColor;
+  static final cancelTextColor = clrCyanBlueColor;
   static final uploadToServerTextColor = Color.fromRGBO(76, 175, 80, 1);
 }

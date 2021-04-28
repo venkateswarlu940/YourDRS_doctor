@@ -2,11 +2,11 @@ import 'dart:io';
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_strings.dart';
 import 'package:YOURDRS_FlutterAPP/network/models/manual_dictations/photo_list.dart';
-import 'package:YOURDRS_FlutterAPP/ui/external_attachment/externalattchment_main.dart';
 import 'package:YOURDRS_FlutterAPP/utils/route_generator.dart';
 import 'package:flutter/services.dart';
 import 'package:YOURDRS_FlutterAPP/helper/db_helper.dart';
 import 'package:flutter/material.dart';
+import '../../../../../common/app_text.dart';
 import '../external_component.dart';
 class Externalattachment_data extends StatefulWidget {
   static const String routeName = '/ExternalAttachments';
@@ -44,6 +44,8 @@ class Externalattachment_data extends StatefulWidget {
 }
 class _Externalattachment_dataState extends State<Externalattachment_data> {
   bool isLoadingPath = false;
+  bool emergencyAddOn=true;
+  // toggleOff=widget.isemergencyaddon;
 
   @override
   Widget build(BuildContext context) {
@@ -65,24 +67,25 @@ class _Externalattachment_dataState extends State<Externalattachment_data> {
           title: Container(
               child: Text(
             widget.displayfilename,
-            style: TextStyle(fontSize: 18),
+            style: TextStyle(fontSize: 18,fontFamily: AppFonts.regular,),
             overflow: TextOverflow.fade,
           )),
           centerTitle: true,
         ),
         body: ListView(children: [
           Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+           // bool emergencyAddOn=true;
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 AppStrings.casedetails_text,
-                style: TextStyle(
+                style: TextStyle( fontFamily: AppFonts.regular,
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: Colors.grey),
               ),
             ),
-            CustomTile(text1: AppStrings.practice_text, text2: widget.practicename),
+            CustomTile(text1: AppStrings.practice_text, text2: widget.practicename ?? 'Practice name NA'),
             Divider(
               color: Colors.blue,
               height: 0,
@@ -94,7 +97,7 @@ class _Externalattachment_dataState extends State<Externalattachment_data> {
               color: Colors.blue,
               height: 0,
             ),
-            CustomTile(text1: AppStrings.doc_text, text2: widget.externaldocumenttype),
+            CustomTile(text1: AppStrings.doc_text, text2: widget.externaldocumenttype?? 'ExternalDocumentType NA'),
             Divider(
               color: Colors.blue,
               height: 0,
@@ -107,45 +110,44 @@ class _Externalattachment_dataState extends State<Externalattachment_data> {
               height: 0,
               thickness: 0.60,
             ),
-            CustomTile(text1: AppStrings.name_text, text2: widget.patientfirstname),
+            CustomTile(text1: AppStrings.name_text, text2: widget.patientfirstname??null),
             Divider(
               color: Colors.blue,
               height: 0,
               thickness: 0.60,
             ),
-            CustomTile(text1: AppStrings.dob_text, text2: widget.patientdob),
+            CustomTile(text1: AppStrings.dob_text, text2: widget.patientdob??null),
             Divider(
               color: Colors.blue,
               height: 0,
             ),
             CustomTile(
                 text1: AppStrings.isemergency_text,
-                text2: widget.isemergencyaddon.toString()),
+                text2: widget.isemergencyaddon.toString()?? 'isemergencyaddOn NA'),
             Divider(
               color: Colors.blue,
               height: 0,
             ),
-            CustomTile(text1: AppStrings.description_text, text2: widget.description),
+            CustomTile(text1: AppStrings.description_text, text2: widget.description?? null),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 AppStrings.uploadedattachments_text,
-                style: TextStyle(
+                style: TextStyle( fontFamily: AppFonts.regular,
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: Colors.grey),
               ),
             ),
             //--------------fetching images from local data base
-            Center(
+            Container(
               child: Container(
                   //  color: Colors.green,
                   width: MediaQuery.of(context).size.width,
                   height: 280,
                   // color: Colors.yellow,
                   child: FutureBuilder<List<PhotoList>>(
-                      future: DatabaseHelper.db
-                          .getAttachmentImages(widget.attachmentId),
+                      future: DatabaseHelper.db.getAttachmentImages(widget.attachmentId),
                       //future: DatabaseHelper.db.getAttachmentImages(widget.id),
                       builder: (BuildContext context,
                           AsyncSnapshot<List<PhotoList>> snapshot) {
@@ -164,7 +166,7 @@ class _Externalattachment_dataState extends State<Externalattachment_data> {
                                       leading: Container(
                                         height: 100,
                                         width: 280,
-                                        child: Text(item.attachmentname),
+                                        child: Text(item.attachmentname,style: TextStyle(fontFamily: AppFonts.regular,),),
                                       ),
                                       trailing: FlatButton(
 
@@ -182,8 +184,7 @@ class _Externalattachment_dataState extends State<Externalattachment_data> {
                                                     0.7,
                                                 decoration: BoxDecoration(
                                                     image: DecorationImage(
-                                                        image: FileImage(
-                                                            new File(item.physicalfilename)),
+                                                        image: FileImage(new File(item.physicalfilename)),
                                                         fit: BoxFit.cover)),
                                               ),
                                             ),

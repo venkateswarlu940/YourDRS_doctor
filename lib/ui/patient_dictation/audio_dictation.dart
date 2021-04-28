@@ -1,10 +1,13 @@
-// import 'dart:html';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:YOURDRS_FlutterAPP/blocs/dictation_screen/audio_dictation_bloc.dart';
 import 'package:YOURDRS_FlutterAPP/blocs/dictation_screen/audio_dictation_event.dart';
 import 'package:YOURDRS_FlutterAPP/blocs/dictation_screen/audio_dictation_state.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_constants.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_loader.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_log_helper.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_strings.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_toast_message.dart';
 import 'package:YOURDRS_FlutterAPP/helper/db_helper.dart';
@@ -16,14 +19,13 @@ import 'package:YOURDRS_FlutterAPP/ui/audio_dictations/random_waves.dart';
 import 'package:YOURDRS_FlutterAPP/widget/save_dictations_alert.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:file/local.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
-
-final GlobalKey<State> _keyLoader = GlobalKey<State>();
 
 class AudioDictationForPatientDetails extends StatefulWidget {
   final String patientFName,
@@ -33,28 +35,28 @@ class AudioDictationForPatientDetails extends StatefulWidget {
       caseNum,
       dictationTypeName,
       appointmentType;
-  final int onlineStatusId;
+  final int onlineStatusId = 107;
   final int offlineStatusId = 107;
   final episodeAppointmentRequestId, episodeId;
   final int offlineUploadedToServer = 0, onlineUploadToServer = 1;
   final int statusId = 17;
   const AudioDictationForPatientDetails(
       {Key key,
-      this.patientFName,
-      this.patientLName,
-      this.patientDob,
-      this.dictationTypeId,
-      this.caseNum,
-      this.appointmentType,
-      this.dictationTypeName,
-      this.episodeId,
-      this.onlineStatusId,
-      this.episodeAppointmentRequestId})
+        this.patientFName,
+        this.patientLName,
+        this.patientDob,
+        this.dictationTypeId,
+        this.caseNum,
+        this.appointmentType,
+        this.dictationTypeName,
+        this.episodeId,
+        this.episodeAppointmentRequestId})
       : super(key: key);
   @override
   _AudioDictationState createState() => _AudioDictationState();
 }
-class _AudioDictationState extends State<AudioDictationForPatientDetails> {
+
+class _AudioDictationState extends State<AudioDictationForPatientDetails> with AppLogHelper{
   var data, dictId;
   String memberId;
   var dob;
@@ -62,78 +64,25 @@ class _AudioDictationState extends State<AudioDictationForPatientDetails> {
   String attachmentContent;
   String fName;
   String lName;
-  bool isInternetAvailable = true;
   bool isStarted = false;
   bool isStartedUploadBtn = true;
-  String audioSize;
   bool isUpload = false;
   bool saveforlater = false;
 
   @override
   void initState() {
     super.initState();
-    // var data = DatabaseHelper.db.getAllDictations();
     _loadData();
-    DeleteFiles();
   }
-  ///delete 90 days older records
-  void DeleteFiles() async {
-    await DatabaseHelper.db.deleteAllOlderRecords();
-  }
+
+  // ignore: non_constant_identifier_names
+
   ///checking internet connectivity to upload files to server.
-  checkNetwork() async {
+  Future<bool> checkNetwork() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.mobile ||
-        connectivityResult == ConnectivityResult.wifi) {
-      //  connected to a mobile network.
-      setState(() {
-        isInternetAvailable = true;
-      });
-    } else {
-      //  connected to a wifi network.
-      setState(() {
-        isInternetAvailable = false;
-        AppToast().showToast(AppStrings.networkNotConnected);
-      });
-    }
+    return connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi;
   }
-  ///customized loading indicator.
-  Future<void> showLoadingDialog(BuildContext context, GlobalKey key) async {
-    return showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return WillPopScope(
-              onWillPop: () async => false,
-              child: SimpleDialog(
-                  key: key,
-                  // backgroundColor: Colors.black54,
-                  backgroundColor: Colors.white,
-                  children: <Widget>[
-                    Center(
-                      child: Row(children: [
-                        SizedBox(
-                          width: 25,
-                        ),
-                        CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation(
-                              CustomizedColors.primaryColor),
-                        ),
-                        SizedBox(
-                          width: 35,
-                        ),
-                        Text(
-                          AppStrings.uploading,
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600),
-                        )
-                      ]),
-                    )
-                  ]));
-        });
-  }
+
   ///Loading data from shared preferences.
   _loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -144,8 +93,10 @@ class _AudioDictationState extends State<AudioDictationForPatientDetails> {
       memeberRoleId = (prefs.getString(Keys.memberRoleId) ?? '');
     });
   }
+
   /// parsing parameters to service class
-  SaveDictations(String attachmentContentType) async {
+  // ignore: non_constant_identifier_names
+  SaveDictations() async {
     String lastAudioFilePath =
         BlocProvider.of<AudioDictationBloc>(context).finalPath;
     String audioFileName = path.basename(lastAudioFilePath);
@@ -169,10 +120,13 @@ class _AudioDictationState extends State<AudioDictationForPatientDetails> {
           widget.dictationTypeName);
       dictId = saveDictations.dictationId;
       data = saveDictations.header.statusCode;
+      String message = saveDictations?.header?.statusMessage;
+      printLog('saveDictations message $message');
     } catch (e) {
-      print('${e.toString()}');
+      printLog('saveDictations ${e.toString()}');
     }
   }
+
   ///Alert dialouge box to show success and Fail status.
   _dialogBox(int i) {
     if (data == "200") {
@@ -180,19 +134,19 @@ class _AudioDictationState extends State<AudioDictationForPatientDetails> {
           barrierDismissible: false,
           context: context,
           builder: (ctx) => SaveDictationsAlert(
-                title: AppStrings.uploadToServer,
-                clr: CustomizedColors.uploadToServerTextColor,
-                count: i,
-              ));
+            title: AppStrings.uploadToServer,
+            clr: CustomizedColors.uploadToServerTextColor,
+            count: i,
+          ));
     } else {
       return showDialog(
           barrierDismissible: false,
           context: context,
           builder: (ctx) => SaveDictationsAlert(
-                title: AppStrings.uploadFailed,
-                clr: CustomizedColors.uploadFailTextColor,
-                count: i,
-              ));
+            title: AppStrings.uploadFailed,
+            clr: CustomizedColors.uploadFailTextColor,
+            count: i,
+          ));
     }
   }
   LocalFileSystem localFileSystem;
@@ -201,7 +155,6 @@ class _AudioDictationState extends State<AudioDictationForPatientDetails> {
   bool viewVisible = true;
   final DateTime now = DateTime.now();
   final DateFormat formatter = DateFormat(AppConstants.dateFormat);
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -219,38 +172,63 @@ class _AudioDictationState extends State<AudioDictationForPatientDetails> {
       ),
     );
   }
+
   _body() {
     final height = MediaQuery.of(context).size.height;
     return BlocListener<AudioDictationBloc, AudioDictationState>(
       listener: (context, state) async {
-        attachmentContent = state.attachmentContent;
-        if (isUpload || saveforlater) {
-          if (attachmentContent != null && attachmentContent.isNotEmpty) {
-            await SaveDictations(state.attachmentContentType);
-            if (saveforlater) {
-              _InsertRecordsToDataBase(
-                  widget.statusId, widget.onlineUploadToServer,
-                  dictationId: dictId.toString());
-              saveforlater = false;
-              await _dialogBox(3);
-            } else {
-              isUpload = false;
-              _InsertRecordsToDataBase(
-                  widget.onlineStatusId, widget.onlineUploadToServer,
-                  dictationId: dictId.toString());
-              await _dialogBox(4);
-            }
+
+        if (state.errorMsg != null && state.errorMsg.isNotEmpty) {
+          // ignore: deprecated_member_use
+          Scaffold.of(context).showSnackBar(SnackBar(
+              content: Text(state.errorMsg ?? AppStrings.someThingWentWrong)));
+          return;
         }
-        }
+
         _currentStatus = state.currentStatus;
         _current = state.current;
         viewVisible = state.viewVisible;
-        isStarted = (_currentStatus == RecordingStatus.Recording ||
-            _currentStatus == RecordingStatus.Paused);
+        isStarted = (_currentStatus == RecordingStatus.Recording || _currentStatus == RecordingStatus.Paused);
 
-        if (state.errorMsg != null && state.errorMsg.isNotEmpty) {
-          Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text(state.errorMsg ?? AppStrings.someThingWentWrong)));
+        if (isUpload || saveforlater) {
+          bool isInternetAvailable = await checkNetwork();
+          int statusId = saveforlater
+              ? widget.statusId
+              : isUpload
+                  ? isInternetAvailable
+                      ? widget.onlineStatusId
+                      : widget.offlineStatusId
+                  : null;
+
+          int dialogInt = saveforlater ? 3 : 4;
+
+          saveforlater = false;
+          isUpload = false;
+
+          attachmentContent = state.attachmentContent;
+          if (attachmentContent != null && attachmentContent.isNotEmpty) {
+            //checking internet connection
+
+            if (isInternetAvailable) {
+              ///progress bar
+              showLoderDialog(
+                  context, text: AppStrings.uploading);
+              await SaveDictations();
+
+              _insertRecordsToDataBase(
+                  statusId,
+                  widget.onlineUploadToServer,
+                  dictationId: dictId.toString());
+              await _dialogBox(dialogInt);
+            } else {
+              AppToast().showToast(AppStrings.networkNotConnected);
+              ///save dictations offline
+              _insertRecordsToDataBase(
+                  statusId,
+                  widget.offlineUploadedToServer);
+              await _dialogBox(dialogInt);
+            }
+          }
         }
       },
       child: BlocBuilder<AudioDictationBloc, AudioDictationState>(
@@ -270,30 +248,16 @@ class _AudioDictationState extends State<AudioDictationForPatientDetails> {
                           children: [
                             Text("${_printDuration(_current?.duration)}"),
                             /////Save for later flat button
+                            // ignore: deprecated_member_use
                             FlatButton(
                                 onPressed: isStarted
                                     ? () async {
-                                        ///calling post api to upload audio file
-                                        BlocProvider.of<AudioDictationBloc>(
-                                                context)
-                                            .add(StopRecord());
-
-                                        //checking internet connection
-                                        await checkNetwork();
-                                        if (isInternetAvailable == true) {
-                                          saveforlater = true;
-                                          ///progress bar
-                                          showLoadingDialog(
-                                              context, _keyLoader);
-                                        } else {
-                                          ///save dictations offline
-                                          _InsertRecordsToDataBase(
-                                              widget.statusId,
-                                              widget.offlineUploadedToServer);
-                                          await _dialogBox(4);
-                                        }
-                                      }
-                                    : null,
+                                  saveforlater = true;
+                                  ///calling post api to upload audio file
+                                  BlocProvider.of<AudioDictationBloc>(
+                                      context)
+                                      .add(StopRecord());
+                                }: null,
                                 child: Text(
                                   AppStrings.saveForLater,
                                   style: TextStyle(
@@ -326,215 +290,176 @@ class _AudioDictationState extends State<AudioDictationForPatientDetails> {
                             Padding(
                               padding: EdgeInsets.symmetric(
                                   horizontal:
-                                      MediaQuery.of(context).size.width / 30,
+                                  MediaQuery.of(context).size.width / 30,
                                   vertical:
-                                      MediaQuery.of(context).size.height / 150),
+                                  MediaQuery.of(context).size.height / 150),
+                              // ignore: deprecated_member_use
                               child: FlatButton(
                                   padding: EdgeInsets.all(0),
-
                                   ///on press for start and resume.
                                   onPressed: isStartedUploadBtn
                                       ? () {
-                                          switch (_currentStatus) {
-                                            case RecordingStatus.Initialized:
-                                              {
-                                                /// bloc provider for start record event
-                                                BlocProvider.of<
-                                                            AudioDictationBloc>(
-                                                        context)
-                                                    .add(StartRecord());
-                                                //Toast for recording started
-
-                                                AppToast().showToast(AppStrings
-                                                    .recordingStarted);
-                                                break;
-                                              }
-                                            case RecordingStatus.Recording:
-                                              {
-                                                /// bloc provider for pause record event
-                                                BlocProvider.of<
-                                                            AudioDictationBloc>(
-                                                        context)
-                                                    .add(PauseRecord());
-                                                //Toast for recording paused
-
-                                                AppToast().showToast(
-                                                    AppStrings.recordingPaused);
-                                                break;
-                                              }
-                                            case RecordingStatus.Paused:
-                                              {
-                                                /// bloc provider for resume record event
-                                                BlocProvider.of<
-                                                            AudioDictationBloc>(
-                                                        context)
-                                                    .add(ResumeRecord());
-                                                //Toast for recording resumed
-
-                                                AppToast().showToast(AppStrings
-                                                    .recordingResumed);
-                                                break;
-                                              }
-                                            case RecordingStatus.Stopped:
-                                              {
-                                                /// bloc provider for init event
-                                                BlocProvider.of<
-                                                            AudioDictationBloc>(
-                                                        context)
-                                                    .add(InitRecord());
-                                                break;
-                                              }
-                                            default:
-                                              break;
-                                          }
+                                    switch (_currentStatus) {
+                                      case RecordingStatus.Initialized:
+                                        {
+                                          /// bloc provider for start record event
+                                          BlocProvider.of<
+                                              AudioDictationBloc>(
+                                              context)
+                                              .add(StartRecord());
+                                          //Toast for recording started
+                                          AppToast().showToast(AppStrings
+                                              .recordingStarted);
+                                          break;
                                         }
+                                      case RecordingStatus.Recording:
+                                        {
+                                          /// bloc provider for pause record event
+                                          BlocProvider.of<
+                                              AudioDictationBloc>(
+                                              context)
+                                              .add(PauseRecord());
+                                          //Toast for recording paused
+                                          AppToast().showToast(
+                                              AppStrings.recordingPaused);
+                                          break;
+                                        }
+                                      case RecordingStatus.Paused:
+                                        {
+                                          /// bloc provider for resume record event
+                                          BlocProvider.of<AudioDictationBloc>(
+                                              context)
+                                              .add(ResumeRecord());
+                                          //Toast for recording resumed
+                                          AppToast().showToast(AppStrings
+                                              .recordingResumed);
+                                          break;
+                                        }
+                                      case RecordingStatus.Stopped:
+                                        {
+                                          /// bloc provider for init event
+                                          BlocProvider.of<
+                                              AudioDictationBloc>(
+                                              context)
+                                              .add(InitRecord());
+                                          break;
+                                        }
+                                      default:
+                                        break;
+                                    }
+                                  }
                                       : null,
                                   child: _buildText(_currentStatus)),
                             ),
-
                             ////upload icon
+                            // ignore: deprecated_member_use
                             FlatButton(
                                 padding: EdgeInsets.all(0),
                                 onPressed: isStarted
                                     ? () async {
-                                        await BlocProvider.of<
-                                                AudioDictationBloc>(context)
-                                            .add(PauseRecord());
-                                        /// Upload audio popup screen
-                                        await showModalBottomSheet(
-                                          isDismissible: false,
-                                          context: context,
-                                          builder: (BuildContext sheetContext) {
-                                            return ListView(
-                                              children: [
-                                                Container(
-                                                  height: height * 0.40,
-                                                  child: Column(
+                                  BlocProvider.of<
+                                      AudioDictationBloc>(context)
+                                      .add(PauseRecord());
+                                  /// Upload audio popup screen
+                                  await showCupertinoModalPopup(
+                                 //   barrierDismissible: false,
+                                    context: context,
+                                    builder: (BuildContext sheetContext) {
+                                      return CupertinoActionSheet(
+                                          actions: [ Material(
+                                            child: Container(
+                                              height: height * 0.35,
+                                              child: Column(
+                                                children: [
+                                                  Icon(
+                                                    Icons.cloud_upload,
+                                                    size: 75,
+                                                    color: CustomizedColors
+                                                        .waveColor,
+                                                  ),
+                                                  SizedBox(
+                                                    height: height * 0.01,
+                                                  ),
+                                                  Text(
+                                                    AppStrings.dict,
+                                                    style: TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                      FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    height: height * 0.025,
+                                                  ),
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceEvenly,
                                                     children: [
-                                                      Icon(
-                                                        Icons.cloud_upload,
-                                                        size: 75,
-                                                        color: CustomizedColors
-                                                            .waveColor,
-                                                      ),
-                                                      SizedBox(
-                                                        height: height * 0.01,
-                                                      ),
-                                                      Text(
-                                                        AppStrings.dict,
-                                                        style: TextStyle(
-                                                          fontSize: 17,
-                                                          fontWeight:
-                                                              FontWeight.bold,
+                                                      /// cancel button in upload dictation dialouge
+                                                      // ignore: deprecated_member_use
+                                                      RaisedButton(
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                        child: Text(
+                                                          AppStrings
+                                                              .cancel,
+                                                          style: TextStyle(
+                                                              fontSize:
+                                                              18,
+                                                              fontWeight:
+                                                              FontWeight
+                                                                  .bold,
+                                                              color: CustomizedColors
+                                                                  .alertCancelColor),
                                                         ),
                                                       ),
-                                                      SizedBox(
-                                                        height: height * 0.025,
+                                                      ///upload button with functionalities.
+                                                      // ignore: deprecated_member_use
+                                                      RaisedButton(
+                                                        onPressed:
+                                                            () async {
+                                                           isUpload = true;
+                                                          setState(() {
+                                                            isStartedUploadBtn =
+                                                            false;
+                                                          });
+
+                                                         ///calling post api to upload audio file
+                                                          BlocProvider.of<
+                                                              AudioDictationBloc>(
+                                                              context)
+                                                              .add(
+                                                              StopRecord());
+                                                          },
+
+                                                        child: Text(
+                                                          AppStrings
+                                                              .upload,
+                                                          style: TextStyle(
+                                                              fontSize:
+                                                              18,
+                                                              fontWeight:
+                                                              FontWeight
+                                                                  .bold,
+                                                              color: CustomizedColors
+                                                                  .textColor),
+                                                        ),
+                                                        color:
+                                                        Colors.green,
                                                       ),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceEvenly,
-                                                        children: [
-                                                          /// cancel button in upload dictation dialouge
-                                                          Container(
-                                                            child: RaisedButton(
-                                                              onPressed: () {
-                                                                Navigator.pop(
-                                                                    context);
-                                                              },
-                                                              child: Text(
-                                                                AppStrings
-                                                                    .cancel,
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        20,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                    color: CustomizedColors
-                                                                        .alertCancelColor),
-                                                              ),
-                                                            ),
-                                                          ),
-
-                                                          ///upload button with functionalities.
-                                                          Container(
-                                                            child: RaisedButton(
-                                                              onPressed:
-                                                                  () async {
-                                                                setState(() {
-                                                                  isStartedUploadBtn =
-                                                                      false;
-                                                                });
-
-                                                                ///calling post api to upload audio file
-                                                                BlocProvider.of<
-                                                                            AudioDictationBloc>(
-                                                                        context)
-                                                                    .add(
-                                                                        StopRecord());
-                                                                //checking internet connection
-                                                                await checkNetwork();
-                                                                if (isInternetAvailable ==
-                                                                    true) {
-                                                                  isUpload =
-                                                                      true;
-
-                                                                  showLoadingDialog(
-                                                                      context,
-                                                                      _keyLoader);
-
-                                                                } else {
-                                                                  setState(() {
-                                                                    isStarted =
-                                                                        false;
-                                                                  });
-                                                                  AppToast().showToast(
-                                                                      AppStrings
-                                                                          .networkNotConnected);
-                                                                  _dialogBox(5);
-
-                                                                  //   int count = 0;
-                                                                  // Navigator.of(context).popUntil((_) => count++ >= 2);
-                                                                  ///If no internet(offline) records would be saved in db.
-                                                                  _InsertRecordsToDataBase(
-                                                                      widget
-                                                                          .offlineStatusId,
-                                                                      widget
-                                                                          .offlineUploadedToServer);
-                                                                  _dialogBox(6);
-                                                                }
-                                                              },
-                                                              child: Text(
-                                                                AppStrings
-                                                                    .upload,
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        20,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                    color: CustomizedColors
-                                                                        .textColor),
-                                                              ),
-                                                              color:
-                                                                  Colors.green,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      )
                                                     ],
-                                                  ),
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        );
-
-                                        /// bloc provider for save record event
-                                      }
-                                    : null,
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                          ),]
+                                      );
+                                    },
+                                  );
+                                }: null,
                                 //cloud icon to upload file.
                                 child: Icon(
                                   Icons.cloud_upload,
@@ -543,7 +468,7 @@ class _AudioDictationState extends State<AudioDictationForPatientDetails> {
                                       ? CustomizedColors.waveColor
                                       : null,
                                 )),
-
+                            // ignore: deprecated_member_use
                             FlatButton(
                               child: Icon(
                                 Icons.delete,
@@ -554,15 +479,14 @@ class _AudioDictationState extends State<AudioDictationForPatientDetails> {
                               ),
                               onPressed: isStarted
                                   ? () {
-                                      /// bloc provider for delete record event
-                                      BlocProvider.of<AudioDictationBloc>(
-                                              context)
-                                          .add(DeleteRecord());
-                                      //Toast for recording deleted.
-
-                                      AppToast().showToast(
-                                          AppStrings.recordingDeleted);
-                                    }
+                                /// bloc provider for delete record event
+                                BlocProvider.of<AudioDictationBloc>(
+                                    context)
+                                    .add(DeleteRecord());
+                                //Toast for recording deleted.
+                                AppToast().showToast(
+                                    AppStrings.recordingDeleted);
+                              }
                                   : null,
                             ),
                           ],
@@ -570,6 +494,7 @@ class _AudioDictationState extends State<AudioDictationForPatientDetails> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            // ignore: deprecated_member_use
                             RaisedButton(
                               onPressed: () {
                                 if (isStarted == false) {
@@ -584,14 +509,13 @@ class _AudioDictationState extends State<AudioDictationForPatientDetails> {
                               child: Text(
                                 AppStrings.cancel,
                                 style: TextStyle(
-                              fontSize:
-                                    20,
+                                    fontSize:
+                                    18,
                                     fontWeight:
                                     FontWeight
                                         .bold,
                                     color: CustomizedColors
                                         . cancelDictationTextColor),
-
                               ),
                             ),
                           ],
@@ -649,34 +573,36 @@ class _AudioDictationState extends State<AudioDictationForPatientDetails> {
     );
   }
   ///insert online and offline Dictation Data
-  _InsertRecordsToDataBase(int statusId, int uploadtoserver,
+  _insertRecordsToDataBase(int statusId, int uploadToServer,
       {String dictationId}) async {
     try {
-      final String formatted = formatter.format(now);
-      int recordDbId = await DatabaseHelper.db.insertAudioRecords(
+      String audioFilePath =
+          BlocProvider.of<AudioDictationBloc>(context).finalPath;
+      String fileNameWithoutExt = path.basename(audioFilePath);
+      await DatabaseHelper.db.insertAudioRecords(
           PatientDictation(
-              // dictationId: '$dictId',
+            // dictationId: '$dictId',
               dictationId: dictationId,
               fileName:
-                  '${widget.dictationTypeName}_${widget.patientFName}_${widget.caseNum}_${formatted}.mp4',
+              '$fileNameWithoutExt.mp4',
               patientFirstName: '${widget.patientFName ?? ''}',
               patientLastName: '${widget.patientLName ?? ''}',
               patientDOB: '${widget.patientDob ?? ''}',
               attachmentName:
-                  '${widget.dictationTypeName}_${widget.patientFName ?? ''}_${widget.caseNum ?? ''}_${formatted ?? ''}.mp4',
+              '$fileNameWithoutExt.mp4',
               createdDate: '${DateTime.now() ?? ''}',
               memberId: int.parse(memberId),
               episodeId: widget.episodeId ?? '',
-              appointmentId: widget.episodeAppointmentRequestId ?? '',
+              appointmentId: widget.episodeAppointmentRequestId,
               dictationTypeId: widget.dictationTypeId,
-              physicalFileName: _current?.path ?? '',
-              statusId: statusId ?? '',
+              physicalFileName: audioFilePath ?? '',
+              statusId: statusId,
               displayFileName:
-                  '${widget.dictationTypeName}_${widget.patientFName}_${widget.caseNum}_${formatted}',
-              uploadedToServer: uploadtoserver ?? '',
+              '$fileNameWithoutExt',
+              uploadedToServer: uploadToServer,
               attachmentType: '.mp4'));
     } catch (e) {
-      print(e.toString());
+      printLog('_insertRecordsToDataBase error ${e.toString()}');
     }
   }
 }

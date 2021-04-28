@@ -1,9 +1,10 @@
 import 'package:YOURDRS_FlutterAPP/blocs/login/pin_validation/pin_screen_validate_bloc.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_icons.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_loader.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_strings.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_text.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_toast_message.dart';
-import 'package:YOURDRS_FlutterAPP/helper/db_helper.dart';
 import 'package:YOURDRS_FlutterAPP/network/repo/local/preference/local_storage.dart';
 import 'package:YOURDRS_FlutterAPP/network/services/login/pin_validate_api.dart';
 import 'package:YOURDRS_FlutterAPP/ui/home/home_screen.dart';
@@ -17,7 +18,6 @@ import 'package:local_auth/local_auth.dart';
 import 'package:pinput/pin_put/pin_put.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 final GlobalKey<NavigatorState> navigatorKey = new GlobalKey<NavigatorState>();
 final GlobalKey<State> _keyLoader = new GlobalKey<State>();
 
@@ -37,38 +37,40 @@ class VerifyPinScreen extends StatelessWidget {
     );
   }
 }
-
-
 class PinPutView extends StatefulWidget {
   @override
   PinPutViewState createState() => PinPutViewState();
 }
 
 class PinPutViewState extends State<PinPutView> {
-  AppToast appToast=AppToast();
+  AppToast appToast = AppToast();
   var name;
   var img;
   bool isInternetAvailable = false;
   final _formKey = GlobalKey<FormState>();
   final pinPutController = TextEditingController();
+  var isItFirstTime;
+  var storePin;
+  var storedMemberPin;
 
-
-
+  _loadData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isItFirstTime = (prefs.getString(Keys.isItFirstTime) ?? '');
+      // print("isItFirstTime>>>>>>>>>$isItFirstTime");
+      storedMemberPin = (prefs.getString(Keys.storedMemberPin) ?? '');
+      //print("storedMemberPin............$storedMemberPin");
+    });
+  }
   @override
   void initState() {
     super.initState();
+    _loadData();
   }
-
-
   ///for clearing input field.
   clearTextInput() {
     pinPutController.clear();
   }
-
-
-
-
-
 
   ///checking internet connection available or not.
   Future<void> _checkInternet() async {
@@ -83,53 +85,9 @@ class PinPutViewState extends State<PinPutView> {
       setState(() {
         isInternetAvailable = false;
       });
-
-      appToast.showToast(AppStrings.no_internet);
-      clearTextInput();
     }
   }
-
-  ///Customized dialog for loading...
-  Future<void> showLoadingDialog(BuildContext context, GlobalKey key) async {
-    return showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return new WillPopScope(
-
-            ///onWillPop disables back button for this specific widget.
-              onWillPop: () async => false,
-              child: SimpleDialog(
-                  key: key,
-                  backgroundColor: Colors.white,
-                  children: <Widget>[
-                    Center(
-                      child: Row(children: [
-                        SizedBox(
-                          width: 25,
-                        ),
-                        CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation(
-                              CustomizedColors.primaryColor),
-                        ),
-                        SizedBox(
-                          width: 35,
-                        ),
-                        Text(
-                          AppStrings.loading,
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600),
-                        )
-                      ]),
-                    )
-                  ]));
-        });
-  }
-
   final LocalAuthentication _localAuthentication = LocalAuthentication();
-
   Future<bool> _isBiometricAvailable() async {
     bool isAvailable = false;
     try {
@@ -137,7 +95,6 @@ class PinPutViewState extends State<PinPutView> {
     } on PlatformException catch (e) {
       print(e);
     }
-
     if (!mounted) return isAvailable;
     // isAvailable;
     return isAvailable;
@@ -152,25 +109,21 @@ class PinPutViewState extends State<PinPutView> {
     } on PlatformException catch (e) {
       print(e);
     }
-
     if (!mounted) return;
   }
   bool isAuthenticated = false;
-
   /// Process of authentication user using
   /// biometrics.
   Future<void> _authenticateUser() async {
     try {
       isAuthenticated = await _localAuthentication.authenticateWithBiometrics(
-        localizedReason:
-        AppStrings.transaction_overview,
+        localizedReason: AppStrings.transaction_overview,
         useErrorDialogs: true,
         stickyAuth: true,
       );
     } on PlatformException catch (e) {
       print(e);
     }
-
     if (!mounted) return;
 
     isAuthenticated;
@@ -181,7 +134,7 @@ class PinPutViewState extends State<PinPutView> {
     }
   }
 
-  String validatePinput(String value) {
+  String _validatePinput(String value) {
     Pattern pattern = r'^[0-9]*$';
     RegExp regex = new RegExp(pattern);
     try {
@@ -198,14 +151,15 @@ class PinPutViewState extends State<PinPutView> {
       print(Exception);
     }
   }
-
+  void setIsItFirstTime() async {
+    await MySharedPreferences.instance.setStringValue(Keys.isItFirstTime, "no");
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _mobileDisplay(),
+      body: SingleChildScrollView(child: _mobileDisplay()),
     );
   }
-
   Widget _alertMessage() {
     Alert(
       context: context,
@@ -216,7 +170,11 @@ class PinPutViewState extends State<PinPutView> {
           color: CustomizedColors.primaryColor,
           child: Text(
             AppStrings.ok,
-            style: TextStyle(color: Colors.white, fontSize: 20),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontFamily: AppFonts.regular,
+            ),
           ),
           onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
           width: 58,
@@ -225,19 +183,23 @@ class PinPutViewState extends State<PinPutView> {
       ],
     ).show();
   }
-
+  storePinInSharePref() async {
+    await MySharedPreferences.instance
+        .setStringValue(Keys.storedMemberPin, storePin);
+  }
   Widget _mobileDisplay() {
     // TODO: implement build
     final BoxDecoration pinPutDecoration = BoxDecoration(
-      color: Colors.white,
+      // color:CustomizedColors.text_field_background,
+      color: Colors.grey[350],
       borderRadius: BorderRadius.circular(12.0),
     );
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
-
     return Container(
       height: height,
-      color: CustomizedColors.PinScreenColor,
+      // color: CustomizedColors.PinScreenColor,
+      color: Colors.white,
       child: BlocListener<PinScreenBloc, PinScreenState>(
         listener: (context, state) {
           setState(() {
@@ -245,12 +207,15 @@ class PinPutViewState extends State<PinPutView> {
             name = state.name;
           });
           if (state.isTrue == true) {
-            Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+            setIsItFirstTime();
+            storePinInSharePref();
+            ///here if the response code is 200 based on that we are storing user entered pin in shared preference.
+            Navigator.of(context, rootNavigator: true).pop();
             RouteGenerator.navigatorKey.currentState
                 .pushReplacementNamed(PatientAppointment.routeName);
             clearTextInput();
           } else {
-            Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+            Navigator.of(context, rootNavigator: true).pop();
             _alertMessage();
             clearTextInput();
           }
@@ -258,66 +223,103 @@ class PinPutViewState extends State<PinPutView> {
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             Text(
-              AppStrings.yourDrs,
+              AppStrings.your,
               style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 50,
-                  letterSpacing: 2,
-                  fontWeight: FontWeight.bold),
+                  fontFamily: AppFonts.regular,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 40,
+                  color: CustomizedColors.your_text_color),
             ),
-            Container(
-              height: 60,
-              child: Image.asset(AppImages.doctorImg),
-            )
+            Text(
+              AppStrings.doctors,
+              style: TextStyle(
+                  fontFamily: AppFonts.regular,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 40,
+                  color: CustomizedColors.doctor_text_color),
+            ),
+            Image.asset(
+              AppImages.doctorImg,
+              // I added asset image
+              height: 50,
+            ),
           ]),
           SizedBox(
             height: height * 0.05,
           ),
-          Container(
-              height: height * 0.13,
-              child: Image.asset(AppImages.pinImage)),
+          // Container(
+          //     height: height * 0.13, child: Image.asset(AppImages.pinImage)),
           SizedBox(
             height: height * 0.03,
           ),
           Text(
             AppStrings.enterPin,
             style: TextStyle(
-                color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                fontFamily: AppFonts.regular,
+                color: Colors.black,
+                fontSize: 18,
+                fontWeight: FontWeight.w600),
           ),
           SizedBox(height: height * 0.05),
           Container(
-            width: width * 0.80,
-            child:
-            Form(
+            // color: Colors.green,
+            width: width * 0.60,
+            //height: height*0.12,
+            child: Form(
               key: _formKey,
               child: GestureDetector(
-                onLongPress: () {},
                 child: PinPut(
                   controller: pinPutController,
-                  validator: validatePinput,
+                  validator: _validatePinput,
                   autovalidateMode: AutovalidateMode.disabled,
                   withCursor: true,
                   fieldsCount: 4,
                   fieldsAlignment: MainAxisAlignment.spaceAround,
-                  textStyle:
-                  const TextStyle(fontSize: 25.0, color: Colors.black),
-                  eachFieldMargin: EdgeInsets.all(0),
-                  eachFieldWidth: 20.0,
-                  eachFieldHeight: 25.0,
+                  textStyle: const TextStyle(
+                    fontSize: 20.0,
+                    color: Colors.grey,
+                  ),
+                  eachFieldWidth: 50.0,
+                  eachFieldHeight: 50.0,
                   onSubmit: (String pin) async {
+                    setState(() {
+                      storePin = pin;
+                    });
                     FocusScope.of(context).unfocus();
-
                     ///after submitting pin keyboard will automatically destroy.
                     if (_formKey.currentState.validate()) {
                       var verify;
                       await _checkInternet();
-                      if (isInternetAvailable == true) {
-                        showLoadingDialog(context, _keyLoader);
-                        BlocProvider.of<PinScreenBloc>(context)
-                            .add(PinScreenEvent(
-                          pin,
-                          verify,
-                        ));
+                      switch(isItFirstTime){
+                      ///we are checking, is this users first time to pin screen.if it is first time then verification is done through api else it is trough sharedPref.
+                        case "yes": {
+                          if (isInternetAvailable == true) {
+                            showLoderDialog(context, text:  AppStrings.loading);
+                            // showLoadingDialog(context, _keyLoader);
+                            BlocProvider.of<PinScreenBloc>(context)
+                                .add(PinScreenEvent(
+                              pin,
+                              verify,
+                            ));
+                            // print("this is pinPut value $pinPutController");
+                          } else {
+                            appToast.showToast(AppStrings.no_internet);
+                            clearTextInput();
+                          }
+                        }
+                        break;
+                        case "no":{
+                          if (pin == storedMemberPin) {
+                            RouteGenerator.navigatorKey.currentState
+                                .pushReplacementNamed(
+                                PatientAppointment.routeName);
+                            clearTextInput();
+                          } else {
+                            _alertMessage();
+                            clearTextInput();
+                          }
+                        }
+                        break;
                       }
                     }
                   },
@@ -327,7 +329,7 @@ class PinPutViewState extends State<PinPutView> {
                     FilteringTextInputFormatter.digitsOnly
                   ],
                   selectedFieldDecoration: pinPutDecoration.copyWith(
-                    color: Colors.white,
+                    color: CustomizedColors.text_field_background,
                     border: Border.all(
                       width: 2,
                       color: const Color.fromRGBO(160, 215, 220, 1),
@@ -345,7 +347,7 @@ class PinPutViewState extends State<PinPutView> {
           GestureDetector(
             onTap: () async {
               SharedPreferences preferences =
-              await SharedPreferences.getInstance();
+                  await SharedPreferences.getInstance();
               await preferences.clear();
               MySharedPreferences.instance.removeAll();
               RouteGenerator.navigatorKey.currentState
@@ -354,13 +356,13 @@ class PinPutViewState extends State<PinPutView> {
             child: Text(
               AppStrings.loginWithDiffAcc,
               style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  decoration: TextDecoration.underline),
+                color: Colors.black,
+                fontSize: 16,
+              ),
             ),
           ),
           SizedBox(
-            height: height * 0.02,
+            height: height * 0.01,
           ),
           GestureDetector(
             onTap: () async {
@@ -371,7 +373,7 @@ class PinPutViewState extends State<PinPutView> {
             },
             child: Text(
               AppStrings.userTouchAndFaceId,
-              style: TextStyle(color: Colors.white, fontSize: 20),
+              style: TextStyle(color: Colors.black, fontSize: 16),
             ),
           ),
           SizedBox(

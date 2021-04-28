@@ -1,11 +1,13 @@
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_icons.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_strings.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_text.dart';
 import 'package:YOURDRS_FlutterAPP/network/repo/local/preference/local_storage.dart';
 import 'package:YOURDRS_FlutterAPP/ui/login/login_screen/loginscreen.dart';
+import 'package:YOURDRS_FlutterAPP/utils/cached_image.dart';
 import 'package:YOURDRS_FlutterAPP/utils/route_generator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DrawerScreen extends StatefulWidget {
@@ -39,65 +41,57 @@ class DrawerState extends State<DrawerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      child: ListView(
-        children: [
-          UserAccountsDrawerHeader(
-            decoration: BoxDecoration(
-              color: CustomizedColors.clrCyanBlueColor,
-            ),
-            accountName: Text(
-              displayName ?? "",
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.montserrat(
-                  color: CustomizedColors.textColor,
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.bold),
-            ),
-            accountEmail: Text(userEmail ?? ""),
-            currentAccountPicture: CircleAvatar(
-              child: ClipOval(
-                child: profilePic == "" 
-                    ? Card(
-                        elevation: 1,
-                        child: Image.asset(
-                          AppStrings.defaultimage,
-                          width: 75,
-                          height: 75,
-                          fit: BoxFit.cover,
-                        ),
-                      )
-                    : Image.network(
-                        profilePic,
-                        width: 75,
-                        height: 75,
-                        fit: BoxFit.cover,
-                      ),
+    double width = MediaQuery.of(context).size.width;
+    return Container(
+      width: width * 0.60,
+      child: Drawer(
+        child: ListView(
+          children: [
+            UserAccountsDrawerHeader(
+              decoration: BoxDecoration(
+                color: CustomizedColors.clrCyanBlueColor,
+              ),
+              accountName: Text(
+                displayName ?? "", overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    color: CustomizedColors.textColor,
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.bold,fontFamily: AppFonts.regular),
+              ),
+              accountEmail: Text(userEmail ?? "",style: TextStyle(fontFamily: AppFonts.regular),),
+              currentAccountPicture: CircleAvatar(
+                child: profilePic != null && profilePic != ""
+                    ? CachedImage(
+                  profilePic,
+                  isRound: true,
+                  radius: 75.0,
+                )
+                    : Image.asset(AppImages.defaultImg),
               ),
             ),
-          ),
-          ListTile(
-            leading: Icon(
-              Icons.account_circle,
-              color: CustomizedColors.clrCyanBlueColor,
+            ListTile(
+              leading: Icon(
+                Icons.account_circle,
+                color: CustomizedColors.clrCyanBlueColor,
+              ),
+              title: Text(AppStrings.txt1,style: TextStyle(fontFamily: AppFonts.regular),),
             ),
-            title: Text(AppStrings.txt1),
-          ),
-          ListTile(
-            leading: Icon(
-              Icons.logout,
-              color: CustomizedColors.clrCyanBlueColor,
+            ListTile(
+              leading: Icon(
+                Icons.logout,
+                color: CustomizedColors.clrCyanBlueColor,
+              ),
+              title: Text(AppStrings.txt2,style: TextStyle(fontFamily: AppFonts.regular),),
+              onTap: () async{
+                SharedPreferences preferences =
+                    await SharedPreferences.getInstance();
+                await preferences.clear();
+                RouteGenerator.navigatorKey.currentState
+                    .pushReplacementNamed(LoginScreen.routeName);
+              },
             ),
-            title: Text(AppStrings.txt2),
-            onTap: () async{
-              SharedPreferences preferences =
-                  await SharedPreferences.getInstance();
-              await preferences.clear();
-              RouteGenerator.navigatorKey.currentState
-                  .pushReplacementNamed(LoginScreen.routeName);
-            },
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

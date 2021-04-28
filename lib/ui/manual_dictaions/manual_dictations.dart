@@ -1,7 +1,8 @@
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_strings.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_text.dart';
 import 'package:YOURDRS_FlutterAPP/ui/home/home_screen.dart';
-import 'package:YOURDRS_FlutterAPP/ui/manual_dictaions/dictations_lists.dart';
+import 'package:YOURDRS_FlutterAPP/ui/manual_dictaions/manual_dictations_lists.dart';
 import 'package:YOURDRS_FlutterAPP/ui/manual_dictaions/submit_new_dictation.dart';
 import 'package:YOURDRS_FlutterAPP/utils/route_generator.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,10 @@ class _ManualDictationsState extends State<ManualDictations> {
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: CustomizedColors.primaryColor,
-        title: Text(AppStrings.appBarTitle),
+        title: Text(
+          AppStrings.appBarTitle,
+          style: TextStyle(fontFamily: AppFonts.regular, ),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded),
           onPressed: () {
@@ -42,19 +46,19 @@ class _ManualDictationsState extends State<ManualDictations> {
                         child: Text(
                       AppStrings.tabSubmitNew,
                       style: TextStyle(
-                        color: CustomizedColors.primaryColor,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                      ),
+                          color: CustomizedColors.primaryColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: AppFonts.regular),
                     )),
                     Tab(
                         child: Text(
                       AppStrings.tabAllDictation,
                       style: TextStyle(
-                        color: CustomizedColors.primaryColor,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                      ),
+                          color: CustomizedColors.primaryColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: AppFonts.regular),
                     )),
                   ],
                 ),

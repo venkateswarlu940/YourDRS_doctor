@@ -1,7 +1,10 @@
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_constants.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_icons.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_strings.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_text.dart';
 import 'package:YOURDRS_FlutterAPP/network/repo/local/preference/local_storage.dart';
+import 'package:YOURDRS_FlutterAPP/ui/login/login_screen/loginscreen.dart';
 import 'package:YOURDRS_FlutterAPP/ui/login/security_pin_screen/confirm_pin.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -32,8 +35,8 @@ class PinPutView extends StatefulWidget {
 class PinPutViewState extends State<PinPutView> {
   /// validating the pin put value
   String validatePinput(String value) {
-    Pattern pattern = r'^[0-9]*$';
-    RegExp regex = new RegExp(pattern);
+    Pattern pattern = AppConstants.numberRegExp;
+    RegExp regex = RegExp(pattern);
     try {
       if (value.isEmpty) {
         return AppStrings.cannot_be_empty;
@@ -52,7 +55,7 @@ class PinPutViewState extends State<PinPutView> {
   @override
   Widget build(BuildContext context) {
     final BoxDecoration pinPutDecoration = BoxDecoration(
-      color: Colors.white,
+      color: Colors.grey,
       borderRadius: BorderRadius.circular(12.0),
     );
 
@@ -61,35 +64,42 @@ class PinPutViewState extends State<PinPutView> {
 
     Widget _smallDisplay() {
       return Container(
-        color: CustomizedColors.PinScreenColor,
+        height: height,
+       // color: CustomizedColors.PinScreenColor,
+        color: Colors.white,
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             Text(
-              AppStrings.yourDrs,
+              AppStrings.your,
               style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 50,
-                  letterSpacing: 2,
-                  fontWeight: FontWeight.bold),
+                  fontFamily: AppFonts.regular,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 40,
+                  color: CustomizedColors.your_text_color),
             ),
-            Container(
-              height: 60,
-              child: Image.asset(AppImages.doctorImg),
-            )
+            Text(
+              AppStrings.doctors,
+              style: TextStyle(
+                  fontFamily: AppFonts.regular,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 40,
+                  color: CustomizedColors.doctor_text_color),
+            ),
+            Image.asset(
+              AppImages.doctorImg,
+              // I added asset image
+              height: 50,
+            ),
           ]),
           SizedBox(
-            height: height * 0.05,
+            height: height * 0.08,
           ),
-          Container(
-              height: height * 0.13,
-              child: Image.asset(AppImages.pinImage)),
-          SizedBox(
-            height: height * 0.03,
-          ),
+          // Container(
+          //     height: height * 0.13, child: Image.asset(AppImages.pinImage)),
           Text(
             AppStrings.createPin,
             style: TextStyle(
-                color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600),
+                color: Colors.black, fontSize: 18, fontWeight: FontWeight.w600,fontFamily: AppFonts.regular),
           ),
           SizedBox(height: height * 0.05),
           Container(
@@ -107,10 +117,10 @@ class PinPutViewState extends State<PinPutView> {
                   fieldsCount: 4,
                   fieldsAlignment: MainAxisAlignment.spaceAround,
                   textStyle:
-                  const TextStyle(fontSize: 25.0, color: Colors.black),
+                      const TextStyle(fontFamily: AppFonts.regular,fontSize: 25.0, color: Colors.black),
                   eachFieldMargin: EdgeInsets.all(0),
-                  eachFieldWidth: 20.0,
-                  eachFieldHeight: 25.0,
+                  eachFieldWidth: 50.0,
+                  eachFieldHeight: 50.0,
                   onSubmit: (String pin) async {
                     FocusScope.of(context).unfocus();
 
@@ -130,7 +140,7 @@ class PinPutViewState extends State<PinPutView> {
                             child: Center(
                               child: Text(
                                 AppStrings.valid_credentials,
-                                style: const TextStyle(fontSize: 15.0),
+                                style: const TextStyle(fontFamily: AppFonts.regular,fontSize: 15.0),
                               ),
                             ),
                           ),
@@ -144,7 +154,7 @@ class PinPutViewState extends State<PinPutView> {
                     FilteringTextInputFormatter.digitsOnly
                   ],
                   selectedFieldDecoration: pinPutDecoration.copyWith(
-                    color: Colors.white,
+                    color: CustomizedColors.text_field_background,
                     border: Border.all(
                       width: 2,
                       color: const Color.fromRGBO(160, 215, 220, 1),
@@ -162,16 +172,17 @@ class PinPutViewState extends State<PinPutView> {
           GestureDetector(
             onTap: () async {
               SharedPreferences preferences =
-              await SharedPreferences.getInstance();
+                  await SharedPreferences.getInstance();
               await preferences.clear();
               MySharedPreferences.instance.removeAll();
               RouteGenerator.navigatorKey.currentState
-                  .pushReplacementNamed(ConfirmPinScreen.routeName);
+                  .pushReplacementNamed(LoginScreen.routeName);
             },
             child: Text(
               AppStrings.loginWithDiffAcc,
               style: TextStyle(
-                  color: Colors.white,
+                  fontFamily: AppFonts.regular,
+                  color: Colors.black,
                   fontSize: 20,
                   decoration: TextDecoration.underline),
             ),
@@ -181,9 +192,7 @@ class PinPutViewState extends State<PinPutView> {
     }
 
     return Scaffold(
-      body: SafeArea(
-        child: _smallDisplay(),
-      ),
+      body: SingleChildScrollView(child: _smallDisplay()),
     );
   }
 }

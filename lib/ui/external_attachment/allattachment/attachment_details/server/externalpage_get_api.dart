@@ -1,13 +1,15 @@
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_strings.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_text.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_toast_message.dart';
 import 'package:YOURDRS_FlutterAPP/network/models/external_dictations/get_all_external_attachments_model.dart';
 import 'package:YOURDRS_FlutterAPP/network/models/external_dictations/get_external_document_details.dart';
-import 'package:YOURDRS_FlutterAPP/network/models/external_dictations/get_external_photos.dart';
 import 'package:YOURDRS_FlutterAPP/network/services/external_attachment/all_external_attachment_service.dart';
+import 'package:YOURDRS_FlutterAPP/ui/external_attachment/allattachment/attachment_details/local/allattachment_screen.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
-import '../local/allattachment_screen.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+
 import 'externalattachment_server.dart';
 
 class GetMyAttachments extends StatefulWidget {
@@ -22,17 +24,15 @@ class GetMyAttachmentsState extends State<GetMyAttachments> {
   /// Declaring variables
   final GlobalKey<State> _keyLoader = new GlobalKey<State>();
   AppToast appToast = AppToast();
-  bool _hasMore;
-  int _pageNumber;
-  bool _error;
-  bool _loading;
-  final int _defaultDataPerPageCount = 20;
-  List<ExternalDocumentList> _externalAttachments;
+  bool _hasMore = true;
+  int _pageNumber = 0;
+  bool _error = false;
+  bool _loading = false;
+  List<ExternalDocumentList> _externalAttachments = [];
   int thresholdValue = 0;
-  bool isInternetAvailable = true;
+  bool isInternetAvailable;
   int externalAttachmentId;
   String imageName;
-  String displayFileName;
   String attachmentName;
   bool hasData = false;
   List imageList = [];
@@ -40,30 +40,31 @@ class GetMyAttachmentsState extends State<GetMyAttachments> {
   AllMyExternalAttachments apiServices = AllMyExternalAttachments();
   GetExternalDocumentDetailsService apiService2=GetExternalDocumentDetailsService();
   GetExternalPhotosService apiService3=GetExternalPhotosService();
-
-//------------------external attachment details api
- // GetExternalDocumentDetails getExternalDocumentDetails;
-
-//---------external attachment photos api
-  //GetExternalPhotos getExternalPhotos;
-
+  //Infinite Scroll Pagination related code//
+  var _scrollController = ScrollController();
+  double maxScroll, currentScroll;
 
   @override
   Future<void> didChangeDependencies() async {
     super.didChangeDependencies();
-    GetAllExternalAttachments allMyExternalAttachments =
-    await apiServices.getMyAllExternalAttachemnts(_pageNumber);
-    if (!mounted) return;
-    setState(() {
-      _hasMore = allMyExternalAttachments.externalDocumentList?.length ==
-          _defaultDataPerPageCount;
-      _loading = false;
-      _pageNumber = _pageNumber + 1;
-      _externalAttachments.addAll(
-          allMyExternalAttachments?.externalDocumentList);
-    });
+    isInternetAvailable = await checkInternet();
+    _getApiExternalAttachments();
+    _scrollController.addListener(_onScroll);
   }
 
+  void _onScroll() {
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+
+    try {
+      if (maxScroll > 0 && currentScroll > 0 && maxScroll == currentScroll) {
+      //  print('maxScroll $maxScroll currentScroll $currentScroll');
+        _getApiExternalAttachments();
+      }
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
 
   //--------------------Show process indicator
   Future<void> showLoadingDialog(BuildContext context, GlobalKey key) async {
@@ -92,7 +93,7 @@ class GetMyAttachmentsState extends State<GetMyAttachments> {
                     ),
                     Text(
                       AppStrings.loading,
-                      style: TextStyle(
+                      style: TextStyle( fontFamily: AppFonts.regular,
                           color: Colors.black,
                           fontSize: 18,
                           fontWeight: FontWeight.w600),
@@ -108,221 +109,210 @@ class GetMyAttachmentsState extends State<GetMyAttachments> {
   }
 
 //---------------------------Check if internet connected or not
-  void checkInternet() async {
+  Future<bool> checkInternet() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.mobile ||
-        connectivityResult == ConnectivityResult.wifi) {
-      setState(() {
-        isInternetAvailable = true;
-      });
-    } else {
-      setState(() {
-        isInternetAvailable = false;
-      });
-      appToast.showToast(AppStrings.no_internet);
-    }
-  }
-
-//-----------------------initState
-  @override
-  void initState() {
-    super.initState();
-    _hasMore = true;
-    _pageNumber = 1;
-    _error = false;
-    _loading = true;
-    _externalAttachments = [];
-    checkInternet();
+    return connectivityResult == ConnectivityResult.mobile ||
+        connectivityResult == ConnectivityResult.wifi;
   }
 
   @override
   Widget build(BuildContext context) {
-    return isInternetAvailable
-        ? Container(
-      child: getBody(),
-    )
-        : Container(
-      child: Allattachmentlocal(),
+    return SingleChildScrollView(
+      controller: _scrollController,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Allattachmentlocal(),
+          getExternalDocsList(),
+        ],
+      ),
     );
   }
 
-  Widget getBody() {
-    if (_externalAttachments?.isEmpty ?? false) {
-      if (_loading) {
-        return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: CircularProgressIndicator(valueColor:
-              AlwaysStoppedAnimation(
-                  CustomizedColors
-                      .primaryColor),),
-            ));
-      } else if (_error) {
-        return Center(
-            child: InkWell(
-              onTap: () {
-                setState(() {
-                  _loading = true;
-                  _error = false;
-                  didChangeDependencies();
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                    AppStrings.errorloadingphotos_text),
-              ),
-            ));
-      }
-    } else {
-      return Container(
-        child: ListView.builder(
+  Widget getExternalDocsList() {
+    if (_loading && _pageNumber == 1) {
+      return _loader();
+    }
+
+    if (_error) {
+      return _errorText(message: 'Something went wrong!!!');
+    }
+
+    return _externalAttachments?.isNotEmpty ?? false
+        ? ListView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
             itemCount: _externalAttachments.length + (_hasMore ? 1 : 0),
             itemBuilder: (context, index) {
-              if (index == _externalAttachments.length - thresholdValue) {
-                didChangeDependencies();
+              if(index == _externalAttachments.length){
+                return _loader();
               }
-              if (index == _externalAttachments.length) {
-                if (_error) {
-                  return Center(
-                      child: InkWell(
-                        onTap: () {
-                          setState(() {
-                            _loading = true;
-                            _error = false;
-                            didChangeDependencies();
-                          });
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child:
-                          Text(AppStrings.errorloadingphotos_text),
-                        ),
-                      ));
-                } else {
-                  return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: CircularProgressIndicator(valueColor:
-                        AlwaysStoppedAnimation(
-                            CustomizedColors
-                                .primaryColor),),
-                      ));
-                }
-              }
+
               final ExternalDocumentList externalDocuments = _externalAttachments[index];
-              // print("all data loaded successfully 7");
-              return InkWell(
-                onTap: () async {
+                // print("all data loaded successfully 7");
+                return AnimationLimiter(
+                    child: Column(children: [
+                  AnimationConfiguration.staggeredList(
+                      position: index,
+                      duration: const Duration(milliseconds: 50),
+                      child: FadeInAnimation(
+                          child: SlideAnimation(
+                              horizontalOffset:
+                                  MediaQuery.of(context).size.width / 2,
+                              child: InkWell(
+                                onTap: () async {
+                                  showLoadingDialog(context, _keyLoader);
 
-                  showLoadingDialog(context, _keyLoader);
+                                  int externalAttachmentId = externalDocuments.externalAttachmentId;
+                                  String displayFileName = externalDocuments.displayFileName;
+                                //  print('externalDocuments item externalAttachmentId $externalAttachmentId $displayFileName');
 
-                  setState(() {
-                    //-----------------------------external attachment details api
-                    externalAttachmentId =
-                        externalDocuments.externalAttachmentId;
-                    externalAttachmentId =
-                        externalDocuments.externalAttachmentId;
+                                  GetExternalDocumentDetails getExternalDocumentDetails =
+                                  await apiService2.getExternalDocumentDetails(externalAttachmentId);
 
-                    displayFileName = externalDocuments.displayFileName;
-                  });
+                                  if(getExternalDocumentDetails!=null){
+                                    /*for (var i = 0; i < getExternalDocumentDetails.attachments.length; i++) {
+                                    String attachmentName = getExternalDocumentDetails.attachments[i].name ?? '';
+                                    this.attachmentName = attachmentName;
+                                    String imageName = getExternalDocumentDetails.attachments[i].name ?? '';
+                                    this.imageName = imageName;
+                                    imageList.add({"image_path": imageName});
+                                    print('getExternalDocumentDetails imageName $imageName attachmentName $attachmentName');
+                                  }*/
 
-                  //--------------------------external attachment details api
-
-                  GetExternalDocumentDetails getExternalDocumentDetails = await apiService2.getExternalDocumentDetails(externalAttachmentId);
-
-                  for (var i = 0; i <
-                      getExternalDocumentDetails.attachments.length; i++) {
-                    getExternalDocumentDetails.attachments.length != 0
-                        ? attachmentName =
-                        getExternalDocumentDetails.attachments[i].name
-                        : attachmentName = "";
-
-                    getExternalDocumentDetails.attachments.length != 0
-                        ? imageName =
-                        getExternalDocumentDetails.attachments[i].name
-                        : imageName = "";
-
-                    imageList.add({
-                      "image_path": imageName
-                    });
-                  }
 ////---------------------------external attachment photos api
-                  GetExternalPhotos getExternalPhotos = await apiService3.getExternalPhotos(imageName);
+//                                   GetExternalPhotos getExternalPhotos = await apiService3.getExternalPhotos(imageName);
 
-                  Navigator.of(_keyLoader.currentContext, rootNavigator: true)
-                      .pop();
-                    // RouteGenerator.navigatorKey.currentState
-                    //     .pushNamedAndRemoveUntil(ExternalAttachments.routeName,
-                    //       (Route<dynamic> route) => false,);
+                                    Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+                                    // RouteGenerator.navigatorKey.currentState
+                                    //     .pushNamedAndRemoveUntil(ExternalAttachments.routeName,
+                                    //       (Route<dynamic> route) => false,);
 
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            Externalattachmnet_server(
-                              displayfilename: displayFileName ?? "",
-                              externalAttachmentId: externalAttachmentId ?? "",
-                              Practicename:
-                              getExternalDocumentDetails.practiceName ?? "",
-                              Locationname:
-                              getExternalDocumentDetails.locationName ?? "",
-                              Externaldocumenttypename:
-                              getExternalDocumentDetails
-                                  .externalDocumentTypeName ??
-                                  "",
-                              Providername:
-                              getExternalDocumentDetails.providerName ?? "",
-                              Patientfirstname:
-                              getExternalDocumentDetails.patientFirstName ??
-                                  "",
-                              Dob: getExternalDocumentDetails.dob ?? "",
-                              isemergencyAddon:
-                              getExternalDocumentDetails.isEmergencyAddOn ??
-                                  "",
-                              Description:
-                              getExternalDocumentDetails.description ?? "",
-                              attachmentname: attachmentName,
-                              filename: getExternalPhotos.fileName ?? "",
-                            )),
-                  );
-                },
-                child: Container(
-                  margin: const EdgeInsets.all(3),
-                  child: Card(
-                    child: ListTile(
-                      leading: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Padding(padding: new EdgeInsets.all(3.0)),
-                          Container(
-                            width: 320,
-                            child: Text(
-                              externalDocuments.displayFileName,
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w600),
-                            ),
-                          ),
-                        ],
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(
-                          Icons.cloud_done,
-                          size: 34,
-                          color: CustomizedColors.primaryColor,
-                        ),
-                        onPressed: () {
-//
-                        },
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }),
-      );
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                      builder: (context) =>
+                                          ExternalAttachmentScreen(),
+                                      settings: RouteSettings(
+                                        arguments: {
+                                          "getExternalDocumentDetails":getExternalDocumentDetails,
+                                          "externalDocuments":externalDocuments,
+                                        }
+                                       // name: externalDocuments.toString(),
+                                      ),
+                                    ),
+                                  );
+                                }
+                                },
+                                child: Container(
+                                margin: const EdgeInsets.all(3),
+                                child: Card(
+                                  child: ListTile(
+                                    leading: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: <Widget>[
+                                        Padding(
+                                            padding: new EdgeInsets.all(3.0)),
+                                        Container(
+                                          width: 320,
+                                          child: Text(
+                                            externalDocuments.displayFileName,
+                                            style: TextStyle(
+                                                fontFamily: AppFonts.regular,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    trailing: IconButton(
+                                      icon: Icon(
+                                        Icons.cloud_done,
+                                        size: 34,
+                                        color: CustomizedColors.primaryColor,
+                                      ),
+                                      onPressed: () {
+                                        appToast.showToast("already uploaded");
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ))))
+                ]));
+            })
+        : _errorText(message: 'No external documents found!!!');
+  }
+
+  _getApiExternalAttachments() async {
+    if (!mounted) return;
+
+    if(isInternetAvailable){
+      if(!_hasMore){
+       // print('_getApiExternalAttachments reached end pageNo $_pageNumber size ${_externalAttachments?.length}');
+        appToast.showToast('No further documents found!!!');
+        return;
+      }
+
+      setState(() {
+        _loading = true;
+        _error = false;
+      });
+
+      _pageNumber = _pageNumber+1;
+      GetAllExternalAttachments allMyExternalAttachments = await apiServices.getMyAllExternalAttachemnts(_pageNumber);
+      setState(() {
+        _loading = false;
+      });
+
+      if (allMyExternalAttachments != null) {
+        if(allMyExternalAttachments.externalDocumentList == null || allMyExternalAttachments.externalDocumentList.isEmpty){
+          _hasMore = false;
+          _error = true;
+        } else {
+          _externalAttachments.addAll(allMyExternalAttachments?.externalDocumentList);
+          _error = false;
+        }
+      } else {
+        _error = true;
+      }
+      setState(() {});
+    } else {
+      appToast.showToast('Please check internet connection!!!');
     }
-    return Container();
+  }
+
+  Widget _loader() {
+    return Center(
+        child: Padding(
+      padding: const EdgeInsets.all(8),
+      child: CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation(CustomizedColors.primaryColor),
+      ),
+    ));
+  }
+
+  Widget _errorText({String message}) {
+    return Center(
+        child: InkWell(
+          onTap: () {
+            _pageNumber = 0;
+            _hasMore = true;
+            _getApiExternalAttachments();
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              message ?? AppStrings.errorloadingphotos_text,style: TextStyle(fontFamily: AppFonts.regular,),),
+          ),
+        ));
+  }
+
+  //dispose methods//
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 }
-

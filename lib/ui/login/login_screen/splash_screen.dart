@@ -7,6 +7,8 @@ import 'package:YOURDRS_FlutterAPP/ui/login/security_pin_screen/verify_security_
 import 'package:YOURDRS_FlutterAPP/utils/route_generator.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../common/app_text.dart';
 class SplashScreen extends StatefulWidget {
   static const String routeName = '/';
   @override
@@ -67,7 +69,7 @@ class SplashScreen_State extends State<SplashScreen> {
               translation: Offset(0.0, -0.3),
               child: Text(
                 AppStrings.yourDrs,
-                style: TextStyle(
+                style: TextStyle( fontFamily: AppFonts.regular,
                     color: Colors.white,
                     fontSize: 50,
                     letterSpacing: 2,

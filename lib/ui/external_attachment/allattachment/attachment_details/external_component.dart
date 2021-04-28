@@ -1,6 +1,8 @@
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../common/app_text.dart';
+
 class CustomTile extends StatelessWidget{
   var text1;
   var text2;
@@ -20,7 +22,7 @@ class CustomTile extends StatelessWidget{
             child:
             Center(
                 child:
-                Text(text1,style: TextStyle(color: CustomizedColors.customeColor,fontWeight: FontWeight.bold),)),
+                Text(text1,style: TextStyle(color: CustomizedColors.customeColor,fontWeight: FontWeight.bold,fontFamily: AppFonts.regular,fontSize: 12),)),
           ),
           SizedBox(width: 10),
           Expanded(
@@ -28,7 +30,7 @@ class CustomTile extends StatelessWidget{
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(text2),
+                Text(text2,style: TextStyle(fontFamily: AppFonts.regular,fontSize: 12),),
               ],
             ),
           ),

@@ -1,7 +1,10 @@
 import 'package:YOURDRS_FlutterAPP/blocs/login/pin_generation/pin_screen_generate_bloc.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_constants.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_icons.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_loader.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_strings.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_text.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_toast_message.dart';
 import 'package:YOURDRS_FlutterAPP/network/repo/local/preference/local_storage.dart';
 import 'package:YOURDRS_FlutterAPP/network/services/login/pin_generation_api.dart';
@@ -70,45 +73,6 @@ class PinPutViewState extends State<PinPutView> {
     pinPutController.clear();
   }
 
-  ///customized dialog box.
-  Future<void> showLoadingDialog(BuildContext context, GlobalKey key) async {
-    return showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return new WillPopScope(
-
-            ///onWillPop disables back button for this specific widget.
-              onWillPop: () async => false,
-              child: SimpleDialog(
-                  key: key,
-                  backgroundColor: Colors.white,
-                  children: <Widget>[
-                    Center(
-                      child: Row(children: [
-                        SizedBox(
-                          width: 25,
-                        ),
-                        CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation(
-                              CustomizedColors.primaryColor),
-                        ),
-                        SizedBox(
-                          width: 35,
-                        ),
-                        Text(
-                          AppStrings.loading,
-                          style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600),
-                        )
-                      ]),
-                    )
-                  ]));
-        });
-  }
-
   Widget _alertMessage(String msg) {
     Alert(
       context: context,
@@ -119,7 +83,7 @@ class PinPutViewState extends State<PinPutView> {
           color: CustomizedColors.primaryColor,
           child: Text(
             AppStrings.ok,
-            style: TextStyle(color: Colors.white, fontSize: 20),
+            style: TextStyle(color: Colors.white, fontSize: 20,  fontFamily: AppFonts.regular,),
           ),
           onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
           width: 58,
@@ -131,8 +95,8 @@ class PinPutViewState extends State<PinPutView> {
 
   /// validating the pin put value
   String _validatePinput(String value) {
-    Pattern pattern = r'^[0-9]*$';
-    RegExp regex = new RegExp(pattern);
+    Pattern pattern = AppConstants.numberRegExp;
+    RegExp regex = RegExp(pattern);
     try {
       if (value.isEmpty) {
         return AppStrings.cannot_be_empty;
@@ -167,7 +131,7 @@ class PinPutViewState extends State<PinPutView> {
     var storedPin = _pin;
     // TODO: implement build
     final BoxDecoration pinPutDecoration = BoxDecoration(
-      color: Colors.white,
+      color: Colors.grey,
       borderRadius: BorderRadius.circular(12.0),
     );
 
@@ -177,12 +141,12 @@ class PinPutViewState extends State<PinPutView> {
       return BlocListener<PinScreenGenerateBloc, PinGenerateScreenState>(
           listener: (context, state) {
             if (state.isTrue == true) {
-              Navigator.of(_keyLoader.currentContext, rootNavigator: true)
+              Navigator.of(context, rootNavigator: true)
                   .pop();
               RouteGenerator.navigatorKey.currentState
                   .pushReplacementNamed(VerifyPinScreen.routeName);
             } else {
-              Navigator.of(_keyLoader.currentContext, rootNavigator: true)
+              Navigator.of(context, rootNavigator: true)
                   .pop();
               _alertMessage(state.statusMsg);
               clearTextInput();
@@ -190,38 +154,44 @@ class PinPutViewState extends State<PinPutView> {
           },
           child: Container(
             height: height,
-            color: CustomizedColors.PinScreenColor,
+            //color: CustomizedColors.PinScreenColor,
+            color: Colors.white,
             child: Stack(
               fit: StackFit.passthrough,
               children: <Widget>[
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                   Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                     Text(
-                      AppStrings.yourDrs,
+                      AppStrings.your,
                       style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 50,
-                          letterSpacing: 2,
-                          fontWeight: FontWeight.bold),
+                          fontFamily: AppFonts.regular,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 40,
+                          color: CustomizedColors.your_text_color),
                     ),
-                    Container(
-                      height: 60,
-                      child: Image.asset(AppImages.doctorImg),
-                    )
+                    Text(
+                      AppStrings.doctors,
+                      style: TextStyle(
+                          fontFamily: AppFonts.regular,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 40,
+                          color: CustomizedColors.doctor_text_color),
+                    ),
+                    Image.asset(
+                      AppImages.doctorImg,
+                      // I added asset image
+                      height: 50,
+                    ),
                   ]),
-                  SizedBox(
-                    height: height * 0.05,
-                  ),
-                  Container(
-                      height: height * 0.13,
-                      child: Image.asset(AppImages.pinImage)),
-                  SizedBox(
-                    height: height * 0.03,
-                  ),
+                  SizedBox(height: height * 0.08),
+                  // Container(
+                  //     height: height * 0.13,
+                  //     child: Image.asset(AppImages.pinImage)),
                   Text(
                     AppStrings.confirmPin,
                     style: TextStyle(
-                        color: Colors.white,
+                        fontFamily: AppFonts.regular,
+                        color: Colors.black,
                         fontSize: 18,
                         fontWeight: FontWeight.w600),
                   ),
@@ -242,11 +212,11 @@ class PinPutViewState extends State<PinPutView> {
                           withCursor: true,
                           fieldsCount: 4,
                           fieldsAlignment: MainAxisAlignment.spaceAround,
-                          textStyle: const TextStyle(
+                          textStyle: const TextStyle(fontFamily: AppFonts.regular,
                               fontSize: 25.0, color: Colors.black),
                           eachFieldMargin: EdgeInsets.all(0),
-                          eachFieldWidth: 20.0,
-                          eachFieldHeight: 25.0,
+                          eachFieldWidth: 50.0,
+                          eachFieldHeight: 50.0,
                           onSubmit: (String pin) async {
                             FocusScope.of(context).unfocus();
                             ///after submitting pin keyboard will automatically destroy.
@@ -256,7 +226,8 @@ class PinPutViewState extends State<PinPutView> {
                               ///if pin is incorrect we are are navigating user back to create pin screen.else we are saving generated pin in API.
                               var _generate;
                               if (isInternetAvailable == true) {
-                                showLoadingDialog(context, _keyLoader);
+                                showLoderDialog(context, text: AppStrings.loading);
+                                // showLoadingDialog(context, _keyLoader);
                                 BlocProvider.of<PinScreenGenerateBloc>(context)
                                     .add(PinGenerateScreenEvent(
                                     pin, _generate, int.parse(_memberId)));
@@ -275,7 +246,7 @@ class PinPutViewState extends State<PinPutView> {
                             FilteringTextInputFormatter.digitsOnly
                           ],
                           selectedFieldDecoration: pinPutDecoration.copyWith(
-                            color: Colors.white,
+                            color: CustomizedColors.text_field_background,
                             border: Border.all(
                               width: 2,
                               color: const Color.fromRGBO(160, 215, 220, 1),
@@ -287,9 +258,7 @@ class PinPutViewState extends State<PinPutView> {
                       ),
                     ),
                   ),
-                  SizedBox(
-                    height: height * 0.10,
-                  ),
+                  SizedBox(height: height * 0.10,),
                   GestureDetector(
                     onTap: () async {
                       SharedPreferences preferences =
@@ -302,7 +271,8 @@ class PinPutViewState extends State<PinPutView> {
                     child: Text(
                       AppStrings.loginWithDiffAcc,
                       style: TextStyle(
-                          color: Colors.white,
+                          fontFamily: AppFonts.regular,
+                          color: Colors.black,
                           fontSize: 20,
                           decoration: TextDecoration.underline),
                     ),
@@ -313,9 +283,7 @@ class PinPutViewState extends State<PinPutView> {
           ));
     }
     return Scaffold(
-      body: SafeArea(
-        child: _portrait(),
-      ),
+      body: SingleChildScrollView(child: _portrait()),
     );
   }
 }

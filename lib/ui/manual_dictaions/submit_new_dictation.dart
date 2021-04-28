@@ -4,6 +4,7 @@ import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_constants.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_log_helper.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_strings.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_text.dart';
 import 'package:YOURDRS_FlutterAPP/network/models/manual_dictations/external_dictation_attacment_model.dart';
 import 'package:YOURDRS_FlutterAPP/network/models/manual_dictations/practice.dart';
 import 'package:YOURDRS_FlutterAPP/network/models/manual_dictations/appointment_type.dart';
@@ -56,9 +57,9 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
   String _selectedLocationName,
       _selectedPracticeName,
       _selectedProviderName,
-      _selectedPracticeId,
-      _selectedLocationId,
-      _selectedProvider,
+      // _selectedPracticeId,
+      // _selectedLocationId,
+      // _selectedProvider,
       _selectedDocName,
       _selectedAppointmentName,
       currentDOB,
@@ -69,7 +70,7 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
       resultInternet,
       memberId,
       id,
-      idGallery,
+      // idGallery,
       memeberRoleId,
       dictationId,
       episodeAppointmentRequestId,
@@ -80,7 +81,11 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
       name,
       dicId;
   int _selectedDoc,
+      idGallery,
+      _selectedPracticeId,
       _selectedAppointment,
+      _selectedLocationId,
+      _selectedProvider,
       toggleVal,
       uploadedToServerTrue = 1,
       uploadedToServerFalse = 0,
@@ -108,32 +113,50 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
   bool emergencyAddOn = true;
 
   @override
-  void initState() {
-    super.initState();
-    _loadData();
-    check();
-  }
-
-  void check() async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.mobile ||
-        connectivityResult == ConnectivityResult.wifi) {
-      setState(() {
-        isInternetAvailable = true;
-      });
-    } else {
-      setState(() {
-        isInternetAvailable = false;
-      });
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+//---------------Common Show dialog box
+    Future<void> showLoadingDialog(BuildContext context, String msg) async {
+      return showDialog<void>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return WillPopScope(
+                onWillPop: () async => false,
+                child: SimpleDialog(
+
+                    // backgroundColor: Colors.black54,
+                    backgroundColor: Colors.white,
+                    children: <Widget>[
+                      Center(
+                        child: Row(children: [
+                          SizedBox(
+                            width: 25,
+                          ),
+                          CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation(
+                                CustomizedColors.primaryColor),
+                          ),
+                          SizedBox(
+                            width: 35,
+                          ),
+                          Text(
+                            msg,
+                            style: TextStyle(
+                                fontFamily: AppFonts.regular,
+                                color: Colors.black,
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w600),
+                          )
+                        ]),
+                      )
+                    ]));
+          });
+    }
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(10),
-//-----------------GestureDetector for shifting focus from input feilds (for dismissing keyboard after clicking outside the textinput feilds)
+//-----------------GestureDetector for shifting focus from input feilds to background layout (for dismissing keyboard after clicking outside the textinput feilds)
         child: GestureDetector(
           onTap: () {
             FocusScope.of(context).requestFocus(FocusNode());
@@ -150,7 +173,8 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                   Text(
                     AppStrings.practice,
                     style: TextStyle(
-                      fontSize: 17,
+                      fontFamily: AppFonts.regular,
+                      fontSize: 14.5,
                       fontWeight: FontWeight.bold,
                       color: CustomizedColors.accentColor,
                     ),
@@ -160,8 +184,9 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                   PracticeDropDown(
                     onTapOfPractice: (PracticeList pValue) {
                       setState(() {
-                        _selectedPracticeId = '${pValue?.id}';
-                        _selectedPracticeName = pValue.name;
+                        _selectedPracticeId =
+                            int.tryParse('${pValue?.id ?? null}');
+                        _selectedPracticeName = pValue.name ?? null;
                       });
                     },
                   ),
@@ -170,7 +195,8 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                   Text(
                     AppStrings.location,
                     style: TextStyle(
-                      fontSize: 17,
+                      fontFamily: AppFonts.regular,
+                      fontSize: 14.5,
                       fontWeight: FontWeight.bold,
                       color: CustomizedColors.accentColor,
                     ),
@@ -181,11 +207,11 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                   Locations(
                     onTapOfLocation: (LocationList value) async {
                       setState(() {
-                        _selectedLocationId = '${value?.id}';
+                        _selectedLocationId = int.parse('${value?.id ?? null}');
                       });
-                      _selectedLocationName = value.name;
+                      _selectedLocationName = value.name ?? null;
                     },
-                    PracticeIdList: _selectedPracticeId,
+                    PracticeIdList: _selectedPracticeId.toString(),
                   ),
 
                   SizedBox(height: 15),
@@ -193,7 +219,8 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                   Text(
                     AppStrings.treatingProvider,
                     style: TextStyle(
-                      fontSize: 17,
+                      fontFamily: AppFonts.regular,
+                      fontSize: 14.5,
                       fontWeight: FontWeight.bold,
                       color: CustomizedColors.accentColor,
                     ),
@@ -202,20 +229,21 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
 
 //-------------Provider drop down
                   ExternalProviderDropDown(
-                    onTapOfProvider: (ProviderList value) async {
-                      _selectedProvider = '${value?.providerId}';
-                      _selectedProviderName = value.displayname;
-                    },
-                    PracticeLocationId: _selectedLocationId,
-                  ),
+                      onTapOfProvider: (ProviderList value) async {
+                        _selectedProvider =
+                            int.parse('${value?.providerId ?? null}');
+                        _selectedProviderName = value.displayname ?? null;
+                      },
+                      PracticeLocationId: _selectedLocationId.toString()),
                   SizedBox(height: 15),
 //-------------------label text first name
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      AppStrings.fName,
+                      AppStrings.fName + " " + AppStrings.mandatoryAsterisk,
                       style: TextStyle(
-                        fontSize: 17,
+                        fontFamily: AppFonts.regular,
+                        fontSize: 14.5,
                         fontWeight: FontWeight.bold,
                         color: CustomizedColors.accentColor,
                       ),
@@ -235,6 +263,7 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                       controller: _fName,
                       decoration: InputDecoration(
                         hintText: AppStrings.fName,
+                        hintStyle: TextStyle(fontSize: 14),
                         contentPadding: EdgeInsets.all(20),
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(5.0)),
@@ -246,9 +275,10 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      AppStrings.lName,
+                      AppStrings.lName + " " + AppStrings.mandatoryAsterisk,
                       style: TextStyle(
-                        fontSize: 17,
+                        fontFamily: AppFonts.regular,
+                        fontSize: 14.5,
                         fontWeight: FontWeight.bold,
                         color: CustomizedColors.accentColor,
                       ),
@@ -268,6 +298,7 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                       controller: _lName,
                       decoration: InputDecoration(
                         hintText: AppStrings.lName,
+                        hintStyle: TextStyle(fontSize: 14),
                         contentPadding: EdgeInsets.all(20),
                         border: OutlineInputBorder(
                           borderSide:
@@ -283,9 +314,12 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      AppStrings.dobDropDownText,
+                      AppStrings.dobDropDownText +
+                          " " +
+                          AppStrings.mandatoryAsterisk,
                       style: TextStyle(
-                        fontSize: 17,
+                        fontFamily: AppFonts.regular,
+                        fontSize: 14.5,
                         fontWeight: FontWeight.bold,
                         color: CustomizedColors.accentColor,
                       ),
@@ -310,6 +344,7 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         hintText: AppStrings.dateFormatLableHintText,
+                        hintStyle: TextStyle(fontSize: 14),
                         labelText: AppStrings.dateFormatLableHintText,
                         suffixIcon: Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -344,9 +379,12 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      AppStrings.dosDropDownText,
+                      AppStrings.dosDropDownText +
+                          " " +
+                          AppStrings.mandatoryAsterisk,
                       style: TextStyle(
-                        fontSize: 17,
+                        fontFamily: AppFonts.regular,
+                        fontSize: 14.5,
                         fontWeight: FontWeight.bold,
                         color: CustomizedColors.accentColor,
                       ),
@@ -371,6 +409,7 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
                         hintText: AppStrings.dateFormatLableHintText,
+                        hintStyle: TextStyle(fontSize: 14),
                         labelText: AppStrings.dateFormatLableHintText,
                         suffixIcon: Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -403,29 +442,31 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                   ),
 
                   SizedBox(height: 15),
+//----------------lable text for appointment type
                   Text(
                     AppStrings.documentType,
                     style: TextStyle(
-                      fontSize: 17,
+                      fontFamily: AppFonts.regular,
+                      fontSize: 14.5,
                       fontWeight: FontWeight.bold,
                       color: CustomizedColors.accentColor,
                     ),
                   ),
                   SizedBox(height: 15),
+//-----------------Document type Dropdown
                   DocumentDropDown(
                     onTapDocument: (ExternalDocumentTypesList value) async {
                       _selectedDoc = value.id;
-
                       _selectedDocName = value.externalDocumentTypeName;
                     },
                   ),
-
                   SizedBox(height: 15),
 //----------------lable text for appointment type
                   Text(
                     AppStrings.appointmentType,
                     style: TextStyle(
-                      fontSize: 17,
+                      fontFamily: AppFonts.regular,
+                      fontSize: 14.5,
                       fontWeight: FontWeight.bold,
                       color: CustomizedColors.accentColor,
                     ),
@@ -442,9 +483,12 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      AppStrings.emergencyText,
+                      AppStrings.emergencyText +
+                          " " +
+                          AppStrings.mandatoryAsterisk,
                       style: TextStyle(
-                        fontSize: 17,
+                        fontSize: 14.5,
+                        fontFamily: AppFonts.regular,
                         fontWeight: FontWeight.bold,
                         color: CustomizedColors.accentColor,
                       ),
@@ -479,9 +523,10 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                   Padding(
                     padding: const EdgeInsets.all(5),
                     child: Text(
-                      AppStrings.descp,
+                      AppStrings.descp + " " + AppStrings.mandatoryAsterisk,
                       style: TextStyle(
-                        fontSize: 17,
+                        fontFamily: AppFonts.regular,
+                        fontSize: 14.5,
                         fontWeight: FontWeight.bold,
                         color: CustomizedColors.accentColor,
                       ),
@@ -500,6 +545,7 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                       keyboardType: TextInputType.multiline,
                       decoration: InputDecoration(
                         hintText: AppStrings.descp,
+                        hintStyle: TextStyle(fontSize: 14),
                         contentPadding: EdgeInsets.all(20),
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(5.0)),
@@ -526,7 +572,13 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                               child: Center(
                                   child: Stack(children: [
                                 image == null
-                                    ? Text(AppStrings.noImageSelected)
+                                    ? Text(
+                                        AppStrings.noImageSelected,
+                                        style: TextStyle(
+                                          fontSize: 14.5,
+                                          fontFamily: AppFonts.regular,
+                                        ),
+                                      )
                                     : Image.file(
                                         image,
                                         fit: BoxFit.contain,
@@ -657,8 +709,10 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                           ),
                           Text(
                             AppStrings.addImgandtakePic,
-                            style:
-                                TextStyle(color: CustomizedColors.accentColor),
+                            style: TextStyle(
+                                fontSize: 14.5,
+                                color: CustomizedColors.accentColor,
+                                fontFamily: AppFonts.regular),
                           ),
                         ],
                       ),
@@ -671,33 +725,45 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                     textColor: CustomizedColors.whiteColor,
                     onPressed: () {
 //------------------If an of the feilds are null then recording is not possible
-                      if (_selectedPracticeName == null ||
-                          _selectedPracticeId == null ||
-                          _selectedLocationName == null ||
-                          _selectedLocationId == null ||
-                          _selectedProvider == null ||
+                      if (
+                          // _selectedPracticeName == null ||
+                          //   _selectedPracticeId == null ||
+                          //   _selectedLocationName == null ||
+                          //   _selectedLocationId == null ||
+                          //   _selectedProviderName == null ||
+                          //   _selectedProvider == null ||
                           _fName.text == null ||
-                          _lName.text == null ||
-                          _dateOfBirthController.text == null ||
-                          _dateOfServiceController.text == null ||
-                          _selectedDoc == null ||
-                          _selectedAppointment == null ||
-                          _descreiption.text == null) {
+                              _fName.text.isEmpty ||
+                              _lName.text == null ||
+                              _lName.text.isEmpty ||
+                              _dateOfBirthController.text == null ||
+                              _dateOfBirthController.text.isEmpty ||
+                              _dateOfServiceController.text == null ||
+                              _dateOfServiceController.text.isEmpty ||
+                              // _selectedDoc == null ||
+                              // _selectedAppointment == null ||
+                              _descreiption.text == null ||
+                              _descreiption.text.isEmpty) {
                         Fluttertoast.showToast(
-                            msg: AppStrings.feildsCannotBeEmpty,
-                            toastLength: Toast.LENGTH_LONG,
-                            gravity: ToastGravity.CENTER,
-                            timeInSecForIosWeb: 1,
-                            backgroundColor: CustomizedColors.activeRedColor,
-                            textColor: CustomizedColors.textColor,
-                            fontSize: 16.0);
+                          msg: AppStrings.feildsCannotBeEmpty,
+                          toastLength: Toast.LENGTH_LONG,
+                          gravity: ToastGravity.CENTER,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: CustomizedColors.activeRedColor,
+                          textColor: CustomizedColors.textColor,
+                          fontSize: 16.0,
+                        );
                       } else {
 //---------Dialog box for Recorder
                         showDialog(
                           context: context,
                           builder: (ctxt) => AlertDialog(
                             title: Center(
-                                child: Text(AppStrings.alertDialogDictation)),
+                                child: Text(
+                              AppStrings.alertDialogDictation,
+                              style: TextStyle(
+                                  fontFamily: AppFonts.regular, fontSize: 14),
+                            )),
                             content: Container(
                               height: 165,
                               child: Column(
@@ -706,18 +772,19 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                                 children: [
 //-----------------material button for audio Recorder
                                   MicButtonForManualDictation(
-                                    practiceName: _selectedPracticeName,
-                                    practiceId: int.parse(_selectedPracticeId),
-                                    locationName: _selectedLocationName,
-                                    locationId: int.parse(_selectedLocationId),
-                                    providerName: _selectedProviderName,
-                                    providerId: int.parse(_selectedProvider),
+                                    practiceName: null ?? _selectedPracticeName,
+                                    practiceId: null ?? _selectedPracticeId,
+                                    locationName: null ?? _selectedLocationName,
+                                    locationId: null ?? _selectedLocationId,
+                                    providerName: null ?? _selectedProviderName,
+                                    providerId: null ?? _selectedProvider,
                                     patientFName: _fName.text,
                                     patientLName: _lName.text,
                                     patientDob: _dateOfBirthController.text,
                                     patientDos: _dateOfServiceController.text,
-                                    docType: _selectedDoc,
-                                    appointmentType: _selectedAppointment,
+                                    docType: _selectedDoc ?? null,
+                                    appointmentType:
+                                        _selectedAppointment ?? null,
                                     emergency: toggleVal,
                                     descp: _descreiption.text,
                                     attachmentname: _fName.text +
@@ -748,6 +815,8 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                                             child: Text(
                                               AppStrings.dialogCancel,
                                               style: TextStyle(
+                                                  fontSize: 14.5,
+                                                  fontFamily: AppFonts.regular,
                                                   color: CustomizedColors
                                                       .whiteColor),
                                             ),
@@ -788,32 +857,18 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                           text: AppStrings.submitButtonText,
                           onPressed: () async {
                             try {
-                              check();
+                              checkNetwork();
                               if (isInternetAvailable == true) {
                                 if (validationKey.currentState.validate()) {
-                                  Scaffold.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          CircularProgressIndicator(
-                                            backgroundColor:
-                                                CustomizedColors.whiteColor,
-                                            valueColor: AlwaysStoppedAnimation(
-                                                CustomizedColors.accentColor),
-                                          ),
-                                          SizedBox(
-                                            width: 15,
-                                          ),
-                                          Text(AppStrings.submitingData),
-                                        ],
-                                      ),
-                                    ),
-                                  );
 ////-----------------------------post data to API the with internet
+                                  showLoadingDialog(
+                                      context, AppStrings.uploadingDialog);
 
                                   await saveGalleryImageToServer();
+                                  await saveGalleryImagesToDbOnline();
+                                  Navigator.of(this.context,
+                                          rootNavigator: true)
+                                      .pop();
                                   memberPhotos.clear();
 
 ////------------------------save data to the local table with response from API
@@ -822,30 +877,13 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                                       .pushReplacementNamed(
                                           ManualDictations.routeName);
                                 }
-                              } else {
+                              } else if (isInternetAvailable == false) {
 ////------------------------save data to the local table when no internet
-                                Scaffold.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        CircularProgressIndicator(
-                                          backgroundColor:
-                                              CustomizedColors.whiteColor,
-                                          valueColor: AlwaysStoppedAnimation(
-                                              CustomizedColors.accentColor),
-                                        ),
-                                        SizedBox(
-                                          width: 15,
-                                        ),
-                                        Text(AppStrings.submitingData),
-                                      ],
-                                    ),
-                                  ),
-                                );
 
                                 await saveGalleryImagesToDBOffline();
+                                await RouteGenerator.navigatorKey.currentState
+                                    .pushReplacementNamed(
+                                        ManualDictations.routeName);
                               }
                               setState(() {
                                 widgetVisible = false;
@@ -870,68 +908,34 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                           buttonColor: CustomizedColors.raisedBtnColor,
                           onPressed: () async {
                             try {
-                              check();
+                              checkNetwork();
                               if (isInternetAvailable == true) {
                                 if (validationKey.currentState.validate()) {
-                                  Scaffold.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          CircularProgressIndicator(
-                                            backgroundColor:
-                                                CustomizedColors.whiteColor,
-                                            valueColor: AlwaysStoppedAnimation(
-                                                CustomizedColors.accentColor),
-                                          ),
-                                          SizedBox(
-                                            width: 15,
-                                          ),
-                                          Text(AppStrings.submitingData),
-                                        ],
-                                      ),
-                                    ),
-                                  );
 ////-----------------------------post data to API the with internet
-
+                                  showLoadingDialog(
+                                      context, AppStrings.uploadingDialog);
                                   await saveAttachmentDictation();
-
-                                  print(
-                                      '---------------------------->>>>>$statusCode<<<<<-----------------------------');
 
 ////------------------------save data to the local table with response from API
                                   await saveCameraImagesToDbOnline();
+                                  Navigator.of(this.context,
+                                          rootNavigator: true)
+                                      .pop();
                                   memberPhotos.clear();
-
                                   await RouteGenerator.navigatorKey.currentState
                                       .pushReplacementNamed(
                                           ManualDictations.routeName);
                                 }
-                              } else {
+                              } else if (isInternetAvailable == false) {
 ////------------------------save data to the local table when no internet
-                                Scaffold.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        CircularProgressIndicator(
-                                          backgroundColor:
-                                              CustomizedColors.whiteColor,
-                                          valueColor: AlwaysStoppedAnimation(
-                                              CustomizedColors.accentColor),
-                                        ),
-                                        SizedBox(
-                                          width: 15,
-                                        ),
-                                        Text(AppStrings.submitingData),
-                                      ],
-                                    ),
-                                  ),
-                                );
 
                                 await saveCameraImagesToDbOffline();
+                                // Navigator.of(this.context, rootNavigator: true)
+                                //     .pop();
+
+                                await RouteGenerator.navigatorKey.currentState
+                                    .pushReplacementNamed(
+                                        ManualDictations.routeName);
                               }
                               setState(() {
                                 widgetVisible = false;
@@ -965,7 +969,31 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
       ),
     );
   }
+
 //------------------->>>>various methods<<<<---------------------
+//
+//
+//
+//
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+    // checkNetwork();
+  }
+
+  // internet check
+  // ignore: missing_return
+  Future<bool> checkNetwork() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.mobile ||
+        connectivityResult == ConnectivityResult.wifi) {
+      // I am connected to a wifi network.
+      isInternetAvailable = true;
+    } else {
+      isInternetAvailable = false;
+    }
+  }
 
 // ignore: missing_return
   String validateInput(String value) {
@@ -991,16 +1019,34 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
                   openCamera();
                   Navigator.pop(ctctc);
                 },
-                child: Text(AppStrings.camera)),
+                child: Text(
+                  AppStrings.camera,
+                  style: TextStyle(
+                    fontSize: 14.5,
+                    fontFamily: AppFonts.regular,
+                  ),
+                )),
             CupertinoActionSheetAction(
                 onPressed: () {
                   openGallery();
                   Navigator.pop(ctctc);
                 },
-                child: Text(AppStrings.PhotoGallery)),
+                child: Text(
+                  AppStrings.PhotoGallery,
+                  style: TextStyle(
+                    fontSize: 14.5,
+                    fontFamily: AppFonts.regular,
+                  ),
+                )),
           ],
           cancelButton: CupertinoActionSheetAction(
-            child: const Text(AppStrings.cancel),
+            child: const Text(
+              AppStrings.cancel,
+              style: TextStyle(
+                fontSize: 14.5,
+                fontFamily: AppFonts.regular,
+              ),
+            ),
             //isDefaultAction: true,
             isDestructiveAction: true,
             onPressed: () {
@@ -1140,9 +1186,9 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
           ExternalDictationAttachment();
       SaveExternalDictationOrAttachment saveDictationAttachments =
           await apiAttachmentPostServices.postApiServiceMethod(
-              int.parse(_selectedPracticeId),
-              int.parse(_selectedLocationId),
-              int.parse(_selectedProvider),
+              _selectedPracticeId,
+              _selectedLocationId,
+              _selectedProvider,
               _fName.text,
               _lName.text,
               _dateOfBirthController.text,
@@ -1159,6 +1205,7 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
       dicId = saveDictationAttachments.dictationId.toString();
 
       statusCode = saveDictationAttachments?.header?.statusCode;
+      print(statusCode);
     } catch (e) {
       print('SaveAttachmentDictation exception ${e.toString()}');
     }
@@ -1169,12 +1216,6 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       memberId = (prefs.getString(Keys.memberId) ?? '');
-      id = (prefs.getString(Keys.iD) ?? '');
-      dictationId = (prefs.getString(Keys.dictationId) ?? '');
-      episodId = (prefs.getString(Keys.episodeId) ?? '');
-      episodeAppointmentRequestId =
-          (prefs.getString(Keys.episodeAppointmentRequestId) ?? '');
-      memeberRoleId = (prefs.getString(Keys.memberRoleId) ?? '');
     });
   }
 
@@ -1184,21 +1225,22 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
       PatientDictation(
           dictationId: dicId ?? null,
           attachmentType: null,
-          locationName: _selectedLocationName ?? "",
-          locationId: int.parse(_selectedLocationId) ?? "",
-          practiceName: _selectedPracticeName ?? "",
-          practiceId: int.parse(_selectedPracticeId) ?? "",
-          providerName: _selectedProviderName ?? "",
-          providerId: int.parse(_selectedProvider) ?? "",
-          patientFirstName: _fName.text ?? "",
-          patientLastName: _lName.text ?? "",
-          patientDOB: _dateOfBirthController.text ?? "",
-          dos: _dateOfServiceController.text ?? "",
-          isEmergencyAddOn: toggleVal ?? "",
-          externalDocumentTypeId: _selectedDoc ?? "",
-          appointmentTypeId: _selectedAppointment ?? "",
-          description: _descreiption.text ?? "",
-          memberId: int.parse(memberId) ?? "",
+          locationName: _selectedLocationName ?? null,
+          locationId: _selectedLocationId ?? null,
+          practiceName: _selectedPracticeName ?? null,
+          practiceId: _selectedPracticeId ?? null,
+          providerName: _selectedProviderName ?? null,
+          providerId: _selectedProvider ?? null,
+          patientFirstName: _fName.text ?? null,
+          patientLastName: _lName.text ?? null,
+          patientDOB: _dateOfBirthController.text ?? null,
+          dos: _dateOfServiceController.text ?? null,
+          isEmergencyAddOn: toggleVal ?? null,
+          externalDocumentTypeId: _selectedDoc ?? null,
+          attachmentName: _fName.text + '_' + _lName.text + '.mp4',
+          appointmentTypeId: _selectedAppointment ?? null,
+          description: _descreiption.text ?? null,
+          memberId: int.parse(memberId) ?? null,
           createdDate: '${DateTime.now()}',
           statusId: null,
           uploadedToServer: uploadedToServerTrue),
@@ -1229,18 +1271,18 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
         dictationId: null,
         attachmentType: null,
         locationName: _selectedLocationName ?? "",
-        locationId: int.parse(_selectedLocationId) ?? "",
+        locationId: _selectedLocationId ?? null,
         practiceName: _selectedPracticeName ?? "",
-        practiceId: int.parse(_selectedPracticeId) ?? "",
+        practiceId: _selectedPracticeId ?? null,
         providerName: _selectedProviderName ?? "",
-        providerId: int.parse(_selectedProvider) ?? "",
+        providerId: _selectedProvider ?? null,
         patientFirstName: _fName.text ?? "",
         patientLastName: _lName.text ?? "",
         patientDOB: _dateOfBirthController.text ?? "",
         dos: _dateOfServiceController.text ?? "",
         isEmergencyAddOn: toggleVal ?? "",
-        externalDocumentTypeId: _selectedDoc ?? "",
-        appointmentTypeId: _selectedAppointment ?? "",
+        externalDocumentTypeId: _selectedDoc ?? null,
+        appointmentTypeId: _selectedAppointment ?? null,
         description: _descreiption.text ?? "",
         memberId: int.parse(memberId) ?? "",
         createdDate: '${DateTime.now()}',
@@ -1275,11 +1317,11 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
   saveGalleryImagesToDbOnline() async {
     final String formatted = formatter.format(now);
     try {
-      if (toggleVal == 0) {
-        emergencyAddOn = false;
-      } else {
-        emergencyAddOn = true;
-      }
+      // if (toggleVal == 0) {
+      //   emergencyAddOn = false;
+      // } else {
+      //   emergencyAddOn = true;
+      // }
       for (int i = 0; i < paths.keys.toList().length; i++) {
         await saveGalleryImageToFolder('${_fName.text ?? ''}', '${formatted}');
 
@@ -1294,29 +1336,28 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
       await DatabaseHelper.db.insertAudioRecords(
         PatientDictation(
           attachmentType: null,
-          dictationId: dicId,
+          dictationId: dicId ?? null,
           locationName: _selectedLocationName ?? "",
-          locationId: int.parse(_selectedLocationId) ?? "",
+          locationId: _selectedLocationId ?? null,
           practiceName: _selectedPracticeName ?? "",
-          practiceId: int.parse(_selectedPracticeId) ?? "",
+          practiceId: _selectedPracticeId ?? null,
           providerName: _selectedProviderName ?? "",
-          providerId: int.parse(_selectedProvider) ?? "",
+          providerId: _selectedProvider ?? null,
           patientFirstName: _fName.text ?? "",
           patientLastName: _lName.text ?? "",
           patientDOB: _dateOfBirthController.text ?? "",
           dos: _dateOfServiceController.text ?? "",
-          isEmergencyAddOn: emergencyAddOn ?? "",
-          externalDocumentTypeId: _selectedDoc ?? "",
-          appointmentTypeId: _selectedAppointment ?? "",
+          isEmergencyAddOn: toggleVal ?? null,
+          externalDocumentTypeId: _selectedDoc ?? null,
+          appointmentTypeId: _selectedAppointment ?? null,
           description: _descreiption.text ?? "",
-          memberId: int.parse(memberId) ?? "",
+          memberId: int.parse(memberId) ?? null,
           createdDate: '${DateTime.now()}',
-          uploadedToServer: uploadedToServerTrue,
+          uploadedToServer: uploadedToServerTrue ?? null,
           statusId: null,
         ),
       );
-    }
-    on PlatformException catch (e) {
+    } on PlatformException catch (e) {
       print("Exception handling" + e.toString());
     }
   }
@@ -1331,9 +1372,11 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
         idGallery = listId[listId.length - 1].id;
 
         await DatabaseHelper.db.insertPhotoList(PhotoList(
-            dictationLocalId: int.parse(idGallery),
-            attachmentname: basename('${(paths.keys.toList()[i])}'),
-            fileName: '${_fName.text ?? ''}_ ${formatted}',
+            dictationLocalId: idGallery + 1,
+            attachmentname:
+                basename('${_fName.text ?? ''}_${(paths.keys.toList()[i])}'),
+            fileName:
+                basename('${_fName.text ?? ''}_${(paths.keys.toList()[i])}'),
             createddate: '${DateTime.now()}',
             attachmenttype: AppStrings.imageFormat,
             physicalfilename: '${paths.values.toList()[i]}'));
@@ -1343,22 +1386,22 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
           attachmentType: null,
           dictationId: null,
           locationName: _selectedLocationName ?? "",
-          locationId: int.parse(_selectedLocationId) ?? "",
+          locationId: _selectedLocationId ?? null,
           practiceName: _selectedPracticeName ?? "",
-          practiceId: int.parse(_selectedPracticeId) ?? "",
+          practiceId: _selectedPracticeId ?? null,
           providerName: _selectedProviderName ?? "",
-          providerId: int.parse(_selectedProvider) ?? "",
+          providerId: _selectedProvider ?? null,
           patientFirstName: _fName.text ?? "",
           patientLastName: _lName.text ?? "",
           patientDOB: _dateOfBirthController.text ?? "",
           dos: _dateOfServiceController.text ?? "",
-          isEmergencyAddOn: toggleVal ?? "",
-          externalDocumentTypeId: _selectedDoc ?? "",
-          appointmentTypeId: _selectedAppointment ?? "",
+          isEmergencyAddOn: toggleVal ?? null,
+          externalDocumentTypeId: _selectedDoc ?? null,
+          appointmentTypeId: _selectedAppointment ?? null,
           description: _descreiption.text ?? "",
-          memberId: int.parse(memberId) ?? "",
+          memberId: int.parse(memberId) ?? null,
           createdDate: '${DateTime.now()}',
-          uploadedToServer: uploadedToServerTrue,
+          uploadedToServer: uploadedToServerFalse,
           statusId: null,
         ),
       );
@@ -1399,9 +1442,9 @@ class _SubmitNewDictationState extends State<SubmitNewDictation>
           ExternalDictationAttachment();
       SaveExternalDictationOrAttachment saveDictationAttachments =
           await apiAttachmentPostServices.postApiServiceMethod(
-              int.parse(_selectedPracticeId) ?? null,
-              int.parse(_selectedLocationId) ?? null,
-              int.parse(_selectedProvider) ?? null,
+              _selectedPracticeId ?? null,
+              _selectedLocationId ?? null,
+              _selectedProvider ?? null,
               _fName.text,
               _lName.text,
               _dateOfBirthController.text,

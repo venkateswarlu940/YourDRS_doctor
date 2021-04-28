@@ -22,6 +22,7 @@ class Profile extends StatefulWidget {
 class _ProfileState extends State<Profile> {
   var displayName = "";
   var profilePic = "";
+ int initialValue =1;
   _loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -119,7 +120,7 @@ class Popupmenu extends StatelessWidget {
             onPressed: () {},
             tooltip: 'Increment',
             child: Pop(
-              initialValue: 1,
+              //  initialValue: 1,
             )),
       ),
     );

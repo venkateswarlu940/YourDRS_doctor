@@ -4,6 +4,8 @@ import 'package:audioplayer/audioplayer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../common/app_text.dart';
+
 typedef void OnError(Exception exception);
 enum PlayerState { stopped, playing, paused }
 // ignore: must_be_immutable
@@ -96,15 +98,16 @@ class _PlayAudioState extends State<PlayAudio> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Center(
+      child: Container(
+        padding: EdgeInsets.only(top: 25),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(widget.displayFileName, style: TextStyle(fontSize: 18)),
+            Text(widget.displayFileName, style: TextStyle(fontSize: 18,fontFamily: AppFonts.regular,),),
             Material(child: _buildPlayer()),
             if (!kIsWeb)
-              localFilePath != null ? Text(localFilePath) : Container(),
+              localFilePath != null ? Text(localFilePath,style: TextStyle(fontFamily: AppFonts.regular,),) : Container(),
             if (!kIsWeb)
               Padding(
                 padding: const EdgeInsets.all(8.0),
@@ -165,7 +168,7 @@ class _PlayAudioState extends State<PlayAudio> {
           : duration != null
           ? durationText
           : '',
-      style: TextStyle(fontSize: 24.0),
+      style: TextStyle(fontSize: 24.0,fontFamily: AppFonts.regular,),
     )
   ]);
 }

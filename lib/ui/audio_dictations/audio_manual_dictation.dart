@@ -6,6 +6,7 @@ import 'package:YOURDRS_FlutterAPP/blocs/dictation_screen/audio_dictation_event.
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_constants.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_strings.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_text.dart';
 import 'package:YOURDRS_FlutterAPP/helper/db_helper.dart';
 import 'package:YOURDRS_FlutterAPP/network/models/manual_dictations/dictation.dart';
 import 'package:YOURDRS_FlutterAPP/network/models/manual_dictations/external_dictation_attacment_model.dart';
@@ -24,6 +25,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:YOURDRS_FlutterAPP/utils/route_generator.dart';
 import 'package:YOURDRS_FlutterAPP/ui/manual_dictaions/manual_dictations.dart';
+import 'package:path/path.dart' as path;
 
 class ManualAudioDictation extends StatefulWidget {
   final String patientFName,
@@ -40,6 +42,7 @@ class ManualAudioDictation extends StatefulWidget {
       locationName,
       descp,
       convertedImg;
+
   final List arrayOfImages;
   final int practiceId, providerId, locationId, docType, appointmentType;
   final int emergency;
@@ -74,6 +77,7 @@ class ManualAudioDictation extends StatefulWidget {
 
 class _ManualAudioDictationState extends State<ManualAudioDictation> {
   bool isInternetAvailable = false;
+  String finalFilepath;
   String name;
   var statusCode;
   var dicId;
@@ -93,8 +97,9 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
   String mp4Base64, mp4Content;
   String attachmentTypeMp4 = 'mp4';
   List memberPhotos = [];
+
   bool emergencyAddOn = true;
-  final GlobalKey<State> _keyLoader = GlobalKey<State>();
+  // final GlobalKey<State> _keyLoader = GlobalKey<State>();
   //Map<String, String> paths;
 
   int uploadedToServerTrue = 1;
@@ -103,19 +108,15 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
   final DateTime now = DateTime.now();
   final DateFormat formatter = DateFormat(AppConstants.dateFormat);
 
-  // date check
-  void check() async {
+  // internet check
+  Future<bool> checkNetwork() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.mobile ||
         connectivityResult == ConnectivityResult.wifi) {
-      setState(() {
-        // I am connected to a wifi network.
-        isInternetAvailable = true;
-      });
+      // I am connected to a wifi network.
+      isInternetAvailable = true;
     } else {
-      setState(() {
-        isInternetAvailable = false;
-      });
+      isInternetAvailable = false;
     }
   }
 
@@ -132,7 +133,7 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
   @override
   void initState() {
     super.initState();
-    check();
+    checkNetwork();
     _loadData();
   }
 
@@ -154,9 +155,9 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
           context: context,
           barrierDismissible: false,
           builder: (BuildContext context) {
-            Future.delayed(Duration(seconds: 5), () {
-              Navigator.of(context).pop(true);
-            });
+            // Future.delayed(Duration(seconds: 5), () {
+            //   Navigator.of(context).pop(true);
+            // });
 
             return WillPopScope(
                 onWillPop: () async => false,
@@ -181,6 +182,7 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
                             msg,
                             style: TextStyle(
                                 color: Colors.black,
+                                fontFamily: AppFonts.regular,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600),
                           )
@@ -192,6 +194,8 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
 
     return BlocListener<AudioDictationBloc, AudioDictationState>(
       listener: (context, state) async {
+        finalFilepath = BlocProvider.of<AudioDictationBloc>(context).finalPath;
+
         attachmentContent = state.attachmentContent;
 
         if (isUpload) {
@@ -205,15 +209,20 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
               showLoadingDialog(context, "Uploading");
               await saveAttachmentDictation(state.attachmentContentType);
 
+              await insertRecordsToDataBaseOnline();
+              Navigator.of(this.context, rootNavigator: true).pop();
+              // memberPhotos.clear();
               await RouteGenerator.navigatorKey.currentState
                   .pushReplacementNamed(ManualDictations.routeName);
-
-              await insertRecordsToDataBaseOnline();
-              memberPhotos.clear();
-            } else {
+            } else if (widget.arrayOfImages != null) {
+              showLoadingDialog(context, "Uploading");
               await saveGalleryImageToServer();
               await insertRecordsWithGalleryImagesOnline();
-              memberPhotos.clear();
+              print('inserting data to DB');
+              Navigator.of(this.context, rootNavigator: true).pop();
+              // memberPhotos.clear();
+              await RouteGenerator.navigatorKey.currentState
+                  .pushReplacementNamed(ManualDictations.routeName);
             }
           }
         } else {
@@ -225,7 +234,10 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
         viewVisible = state.viewVisible;
         if (state.errorMsg != null && state.errorMsg.isNotEmpty) {
           Scaffold.of(context).showSnackBar(SnackBar(
-              content: Text(state.errorMsg ?? 'Something went wrong')));
+              content: Text(
+            state.errorMsg ?? 'Something went wrong',
+            style: TextStyle(fontFamily: AppFonts.regular),
+          )));
         }
       },
       child: BlocBuilder<AudioDictationBloc, AudioDictationState>(
@@ -243,63 +255,68 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text("${_printDuration(_current?.duration)}"),
+                            Text(
+                              "${_printDuration(_current?.duration)}",
+                              style: TextStyle(fontFamily: AppFonts.regular),
+                            ),
                             FlatButton(
                                 onPressed: () async {
                                   /// bloc provider for save record event
                                   BlocProvider.of<AudioDictationBloc>(context)
                                       .add(StopRecord());
+                                  // checkNetwork();
 
                                   if (isInternetAvailable == true) {
-                                    if (widget.arrayOfImages != null) {
-                                      ///upload gallery images to the server and db
-
-                                      isUpload = true;
-
-                                      // await insertRecordsWithGalleryImagesOnline();
-                                    } else if (widget.arrayOfImages == null) {
-                                      ///upload camera image to the server and db
-                                      //post to the API and get dictation ID
-
-                                      isUpload = true;
-
-                                      //call insert method with dictationID
-                                      // await insertRecordsToDataBaseOnline();
-
-                                      // await RouteGenerator
-                                      //     .navigatorKey.currentState
-                                      //     .pushReplacementNamed(
-                                      //         ManualDictations.routeName);
-                                    }
+                                    isUpload = true;
                                   } else
                                   //internet is not there
                                   {
                                     if (widget.arrayOfImages != null) {
                                       ///upload gallery images to the db
-                                      ///
-                                      Fluttertoast.showToast(
-                                          msg: AppStrings.noInternet,
-                                          toastLength: Toast.LENGTH_SHORT,
-                                          gravity: ToastGravity.CENTER,
-                                          timeInSecForIosWeb: 1,
-                                          backgroundColor:
-                                              CustomizedColors.activeRedColor,
-                                          textColor: CustomizedColors.textColor,
-                                          fontSize: 16.0);
+
+                                      // Fluttertoast.showToast(
+                                      //     msg: AppStrings.noInternet,
+                                      //     toastLength: Toast.LENGTH_SHORT,
+                                      //     gravity: ToastGravity.CENTER,
+                                      //     timeInSecForIosWeb: 2,
+                                      //     backgroundColor:
+                                      //         CustomizedColors.activeRedColor,
+                                      //     textColor: CustomizedColors.textColor,
+                                      //     fontSize: 16.0);
+                                      showLoadingDialog(
+                                          context, "Saving to Local DB");
                                       await insertRecordsWithGalleryImagesOffline();
+                                      Navigator.of(this.context,
+                                              rootNavigator: true)
+                                          .pop();
+
+                                      await RouteGenerator
+                                          .navigatorKey.currentState
+                                          .pushReplacementNamed(
+                                              ManualDictations.routeName);
                                     } else if (widget.arrayOfImages == null) {
                                       ///upload camera image to the db
                                       ///
-                                      Fluttertoast.showToast(
-                                          msg: AppStrings.noInternet,
-                                          toastLength: Toast.LENGTH_SHORT,
-                                          gravity: ToastGravity.CENTER,
-                                          timeInSecForIosWeb: 1,
-                                          backgroundColor:
-                                              CustomizedColors.activeRedColor,
-                                          textColor: CustomizedColors.textColor,
-                                          fontSize: 16.0);
+                                      // Fluttertoast.showToast(
+                                      //     msg: AppStrings.noInternet,
+                                      //     toastLength: Toast.LENGTH_SHORT,
+                                      //     gravity: ToastGravity.CENTER,
+                                      //     timeInSecForIosWeb: 2,
+                                      //     backgroundColor:
+                                      //         CustomizedColors.activeRedColor,
+                                      //     textColor: CustomizedColors.textColor,
+                                      //     fontSize: 16.0);
+                                      showLoadingDialog(
+                                          context, "Saving to Local DB");
                                       await insertRecordsToDataBaseOffline();
+                                      Navigator.of(this.context,
+                                              rootNavigator: true)
+                                          .pop();
+
+                                      await RouteGenerator
+                                          .navigatorKey.currentState
+                                          .pushReplacementNamed(
+                                              ManualDictations.routeName);
                                     }
                                   }
 
@@ -316,6 +333,7 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
                                 child: Text(
                                   AppStrings.saveRecording,
                                   style: TextStyle(
+                                      fontFamily: AppFonts.regular,
                                       fontWeight: FontWeight.bold,
                                       color: CustomizedColors.saveLaterColor,
                                       fontSize: 18),
@@ -350,8 +368,8 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
                               child: FlatButton(
                                 padding: EdgeInsets.all(0),
                                 onPressed: () {
-                                  print(
-                                      'onPressed _currentStatus $_currentStatus');
+                                  // print(
+                                  //     'onPressed _currentStatus $_currentStatus');
                                   switch (_currentStatus) {
                                     case RecordingStatus.Initialized:
                                       {
@@ -438,7 +456,7 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
     );
   }
 
-  /// setting timer format
+  ///--------------setting timer format
   String _printDuration(Duration duration) {
     if (duration != null) {
       String twoDigits(int n) => n.toString().padLeft(2, "0");
@@ -449,7 +467,7 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
     return '';
   }
 
-  ///play pause button icons
+  ///-----------------play pause button icons
   Widget _buildText(RecordingStatus status) {
     var icon;
     switch (_currentStatus) {
@@ -483,15 +501,17 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
     );
   }
 
-  //Insert Dictation Data when online and camera images
+//---------------Insert Dictation Data when online and camera images
   insertRecordsToDataBaseOnline() async {
     try {
+      String audioFilePath =
+          BlocProvider.of<AudioDictationBloc>(context).finalPath;
+      String fileNameWithoutExt = path.basename(audioFilePath);
       final String formatted = formatter.format(now);
 
       await DatabaseHelper.db.insertAudioRecords(PatientDictation(
-        dictationId: dicId ?? null,
-        // audioFile: audioFile,
-        attachmentType: "mp4",
+        dictationId: dicId.toString() ?? null,
+        attachmentType: attachmentTypeMp4,
         fileName: widget.patientFName +
             "_" +
             widget.patientLName +
@@ -505,6 +525,7 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
             "_" +
             formatted +
             ".mp4",
+        physicalFileName: finalFilepath ?? '',
         locationId: widget.locationId ?? null,
         practiceName: widget.practiceName ?? null,
         practiceId: widget.practiceId ?? null,
@@ -520,8 +541,12 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
         appointmentTypeId: widget.appointmentType ?? null,
         description: widget.descp ?? null,
         createdDate: '${DateTime.now()}' ?? 'NA',
-        displayFileName:
-            widget.patientFName + "_" + widget.patientLName + "_" + formatted,
+        displayFileName: widget.patientFName +
+            "_" +
+            widget.patientLName +
+            "_" +
+            formatted +
+            ".mp4",
       ));
 
       // List dictId = await DatabaseHelper.db.getDectionId();
@@ -540,14 +565,17 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
     }
   }
 
-  //insert into database if offline and camera images
+//----------------insert into database if offline and camera images
 
   insertRecordsToDataBaseOffline() async {
     try {
+      // String audioFilePath =
+      //     BlocProvider.of<AudioDictationBloc>(context).finalPath;
+      // String fileNameWithoutExt = path.basename(audioFilePath);
       final String formatted = formatter.format(now);
 
       await DatabaseHelper.db.insertAudioRecords(PatientDictation(
-        dictationId: dicId ?? null,
+        dictationId: dicId.toString() ?? null,
         attachmentType: "mp4",
         fileName: widget.patientFName +
             "_" +
@@ -563,6 +591,7 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
             formatted +
             ".mp4",
         locationId: widget.locationId ?? null,
+        physicalFileName: finalFilepath ?? '',
         practiceName: widget.practiceName ?? null,
         practiceId: widget.practiceId ?? null,
         providerName: widget.providerName ?? null,
@@ -577,8 +606,12 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
         appointmentTypeId: widget.appointmentType ?? null,
         description: widget.descp ?? null,
         createdDate: '${DateTime.now()}' ?? 'NA',
-        displayFileName:
-            widget.patientFName + "_" + widget.patientLName + "_" + formatted,
+        displayFileName: widget.patientFName +
+            "_" +
+            widget.patientLName +
+            "_" +
+            formatted +
+            ".mp4",
       ));
 
       List dictId = await DatabaseHelper.db.getDectionId();
@@ -589,17 +622,20 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
           dictationLocalId: id,
           attachmentname: widget.attachmentname,
           createddate: '${DateTime.now()}',
-          fileName: widget.fileName,
+          fileName: widget.fileName ?? null,
           attachmenttype: AppStrings.imageFormat,
-          physicalfilename: widget.physicalFileName));
+          physicalfilename: widget.physicalFileName ?? null));
     } catch (e) {
       print('_insertRecordsToDataBase ${e.toString()}');
     }
   }
 
-// post to the API
+//---------post to the API
   saveAttachmentDictation(String attachmentContentType) async {
     try {
+      // String audioFilePath =
+      //     BlocProvider.of<AudioDictationBloc>(context).finalPath;
+      // String fileNameWithoutExt = path.basename(audioFilePath);
       //when path is null no camera image is selected
       if (widget.physicalFileName == null) {
         final String formatted = formatter.format(now);
@@ -643,7 +679,7 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
         dicId = saveDictationAttachments.dictationId;
         statusCode = saveDictationAttachments?.header?.statusCode;
         //printing status code
-        print("status $statusCode");
+        // print("status $statusCode");
       }
       //saving when selected camera images selected and path is not empty
       else {
@@ -705,13 +741,14 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
         dicId = saveDictationAttachments.dictationId;
         statusCode = saveDictationAttachments?.header?.statusCode;
         //printing status code
-        print("status $statusCode");
+        // print("status $statusCode");
       }
     } catch (e) {
       print('SaveAttachmentDictation exception ${e.toString()}');
     }
   }
 
+//----------------getting memberId from sharedPrefarance
   _loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -719,12 +756,16 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
     });
   }
 
+//----------------insert records with gallery images to db when online
   insertRecordsWithGalleryImagesOnline() async {
+    // String audioFilePath =
+    //     BlocProvider.of<AudioDictationBloc>(context).finalPath;
+    // String fileNameWithoutExt = path.basename(audioFilePath);
     final String formatted = formatter.format(now);
     try {
       for (int i = 0; i < widget.arrayOfImages.length; i++) {
         await DatabaseHelper.db.insertPhotoList(PhotoList(
-            dictationLocalId: dicId,
+            dictationLocalId: int.parse(dicId),
             attachmentname: ('${(widget.arrayOfImages[i])}'),
             fileName: '${widget.patientFName ?? ''}_ ${formatted}',
             createddate: '${DateTime.now()}',
@@ -740,7 +781,20 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
               formatted +
               ".mp4",
           attachmentType: 'mp4',
-          dictationId: dicId,
+          displayFileName: widget.patientFName +
+              "_" +
+              widget.patientLName +
+              "_" +
+              formatted +
+              ".mp4",
+          attachmentName: widget.patientFName +
+              "_" +
+              widget.patientLName +
+              "_" +
+              formatted +
+              ".mp4",
+          physicalFileName: finalFilepath ?? '',
+          dictationId: dicId.toString(),
           locationName: widget.locationName ?? "",
           locationId: widget.locationId ?? "",
           practiceName: widget.practiceName ?? "",
@@ -766,12 +820,16 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
     }
   }
 
+//----------------insert records with gallery images to db when offline
   insertRecordsWithGalleryImagesOffline() async {
+    // String audioFilePath =
+    //     BlocProvider.of<AudioDictationBloc>(context).finalPath;
+    // String fileNameWithoutExt = path.basename(audioFilePath);
     final String formatted = formatter.format(now);
     try {
       for (int i = 0; i < widget.arrayOfImages.length; i++) {
         List listId = await DatabaseHelper.db.getGalleryId();
-        idGallery = listId[listId.length - 1].id;
+        idGallery = listId[listId.length].id;
         await DatabaseHelper.db.insertPhotoList(PhotoList(
             dictationLocalId: idGallery ?? "NA",
             attachmentname: ('${(widget.arrayOfImages[i])}'),
@@ -783,7 +841,22 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
       await DatabaseHelper.db.insertAudioRecords(
         PatientDictation(
           attachmentType: 'mp4',
+          fileName: widget.patientFName +
+              "_" +
+              widget.patientLName +
+              "_" +
+              formatted +
+              ".mp4",
+          attachmentName: widget.patientFName +
+              "_" +
+              widget.patientLName +
+              "_" +
+              formatted +
+              ".mp4",
+          displayFileName:
+              widget.patientFName + "_" + widget.patientLName + "_" + formatted,
           dictationId: null,
+          physicalFileName: finalFilepath ?? '',
           locationName: widget.locationName ?? "",
           locationId: widget.locationId ?? "",
           practiceName: widget.practiceName ?? "",
@@ -809,8 +882,11 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
     }
   }
 
-//-----------------gallery images to server
+//-----------------gallery images to API
   saveGalleryImageToServer() async {
+    // String audioFilePath =
+    //     BlocProvider.of<AudioDictationBloc>(context).finalPath;
+    // String fileNameWithoutExt = path.basename(audioFilePath);
     String attachmentTypeJpg = 'jpg';
 
     final String formatted = formatter.format(now);
@@ -886,8 +962,6 @@ class _ManualAudioDictationState extends State<ManualAudioDictation> {
 
       statusCode = saveDictationAttachments?.header?.statusCode;
       print("status $statusCode");
-      await RouteGenerator.navigatorKey.currentState
-          .pushReplacementNamed(ManualDictations.routeName);
     } catch (e) {}
 // }
   }

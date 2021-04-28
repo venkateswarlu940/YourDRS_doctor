@@ -34,6 +34,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:YOURDRS_FlutterAPP/network/models/manual_dictations/external_dictation_attacment_model.dart';
 
+import '../../../common/app_text.dart';
+
 ///------------------------------This is the SubmitNew class and this class contains all the fields for ExternalAttachment screen
 class SubmitNew extends StatefulWidget {
   // static const String routeName = '/SubmitNew';
@@ -129,9 +131,9 @@ List photoListOfGallery = [];
                     ),
                     Text(
                       AppStrings.showuploader,
-                      style: TextStyle(
+                      style: TextStyle( fontFamily: AppFonts.regular,
                           color: Colors.black,
-                          fontSize: 18,
+                          fontSize: 14,
                           fontWeight: FontWeight.w600),
                     )
                   ],
@@ -173,8 +175,8 @@ List photoListOfGallery = [];
                       padding: const EdgeInsets.only(top: 20),
                       child: Text(
                         AppStrings.practice,
-                        style: TextStyle(
-                          fontSize: 17,
+                        style: TextStyle( fontFamily: AppFonts.regular,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: CustomizedColors.practice_textColor,
                         ),
@@ -202,7 +204,7 @@ List photoListOfGallery = [];
                       child: Text(
                         AppStrings.locations,
                         style: TextStyle(
-                          fontSize: 17,
+                          fontSize: 14, fontFamily: AppFonts.regular,
                           fontWeight: FontWeight.bold,
                           color: CustomizedColors.practice_textColor,
                         ),
@@ -230,8 +232,8 @@ List photoListOfGallery = [];
                       padding: const EdgeInsets.only(top:10),
                       child: Text(
                         AppStrings.provider,
-                        style: TextStyle(
-                          fontSize: 17,
+                        style: TextStyle( fontFamily: AppFonts.regular,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: CustomizedColors.practice_textColor,
                         ),
@@ -266,8 +268,8 @@ List photoListOfGallery = [];
                             padding: const EdgeInsets.only(top: 20),
                             child: Text(
                               AppStrings.firstname,
-                              style: TextStyle(
-                                fontSize: 17,
+                              style: TextStyle( fontFamily: AppFonts.regular,
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 color: CustomizedColors.practice_textColor,
                               ),
@@ -315,8 +317,8 @@ List photoListOfGallery = [];
                             padding: const EdgeInsets.only(top: 20),
                             child: Text(
                               AppStrings.lastname,
-                              style: TextStyle(
-                                fontSize: 17,
+                              style: TextStyle( fontFamily: AppFonts.regular,
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 color: CustomizedColors.practice_textColor,
                               ),
@@ -360,8 +362,8 @@ List photoListOfGallery = [];
                             padding: const EdgeInsets.only(top: 20),
                             child: Text(
                               AppStrings.dateofbirth,
-                              style: TextStyle(
-                                fontSize: 17,
+                              style: TextStyle( fontFamily: AppFonts.regular,
+                                fontSize: 14,
                                 fontWeight: FontWeight.bold,
                                 color: CustomizedColors.practice_textColor,
                               ),
@@ -428,8 +430,8 @@ List photoListOfGallery = [];
                       padding: const EdgeInsets.only(top: 20),
                       child: Text(
                         AppStrings.documenttype,
-                        style: TextStyle(
-                          fontSize: 17,
+                        style: TextStyle( fontFamily: AppFonts.regular,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: CustomizedColors.practice_textColor,
                         ),
@@ -443,6 +445,7 @@ List photoListOfGallery = [];
                       onTapDocument: (ExternalDocumentTypesList value) {
                         selecteddocumnettype = value.externalDocumentTypeName;
                         documenttypeId = value.id;
+                       // providerId1 = '${value.providerId}';
                       },
                     ),
                   ),
@@ -454,7 +457,7 @@ List photoListOfGallery = [];
                       child: Text(
                         AppStrings.emergency_descrption,
                         style: TextStyle(
-                          fontSize: 17,
+                          fontSize: 14, fontFamily: AppFonts.regular,
                           fontWeight: FontWeight.bold,
                           color: CustomizedColors.practice_textColor,
                         ),
@@ -500,7 +503,7 @@ List photoListOfGallery = [];
                             child: Text(
                               AppStrings.description,
                               style: TextStyle(
-                                fontSize: 17,
+                                fontSize: 14, fontFamily: AppFonts.regular,
                                 fontWeight: FontWeight.bold,
                                 color: CustomizedColors.practice_textColor,
                               ),
@@ -554,7 +557,7 @@ List photoListOfGallery = [];
                                   ),
                                   Text(
                                     'Add Image/Take Picture',
-                                    style: TextStyle(
+                                    style: TextStyle( fontFamily: AppFonts.regular,fontSize: 14,
                                         color:
                                         CustomizedColors.addimage_textColor),
                                   ),
@@ -567,8 +570,6 @@ List photoListOfGallery = [];
                       ),
                     ),
                   ),
-                  SizedBox(height: 0),
-
  //---------------------------display the camera images to the ui
 
                   Visibility(
@@ -589,7 +590,7 @@ List photoListOfGallery = [];
                               child: Center(
                                   child: Stack(children: [
                                     image == null
-                                        ? Text(AppStrings.noImageselected_text)
+                                        ? Text(AppStrings.noImageselected_text,style: TextStyle(fontFamily: AppFonts.regular,fontSize: 14),)
                                         : Image.file(
                                       image,
                                       fit: BoxFit.contain,
@@ -747,6 +748,7 @@ List photoListOfGallery = [];
                                     try {
                                       await check();
                                       if (isInternetAvailable == true) {
+
                                         if (_formKey.currentState.validate()) {
                                           showLoadingDialog(context, _keyLoader);
 //---------------------------------------------save gallary images to sever with internet
@@ -763,8 +765,8 @@ List photoListOfGallery = [];
                                           await RouteGenerator.navigatorKey.currentState
                                               .pushReplacementNamed(
                                               ExternalAttachments.routeName);
-
                                         }
+                                        await appToast.showToast("fields can not be empty");
                                       } else {
                                         if (_formKey.currentState.validate()) {
                                           showLoadingDialog(context, _keyLoader);
@@ -929,16 +931,16 @@ List photoListOfGallery = [];
                   openCamera();
                   Navigator.pop(ctctc);
                 },
-                child: Text(AppStrings.camera_text)),
+                child: Text(AppStrings.camera_text,style: TextStyle(fontFamily: AppFonts.regular,fontSize: 14),)),
             CupertinoActionSheetAction(
                 onPressed: () {
                   openGallery();
                   Navigator.pop(ctctc);
                 },
-                child: Text(AppStrings.gallery_text)),
+                child: Text(AppStrings.gallery_text,style: TextStyle(fontFamily: AppFonts.regular,fontSize: 14),)),
           ],
           cancelButton: CupertinoActionSheetAction(
-            child: const Text(AppStrings.cancel_text),
+            child: const Text(AppStrings.cancel_text,style: TextStyle(fontFamily: AppFonts.regular,fontSize: 14),),
             //isDefaultAction: true,
             isDestructiveAction: true,
             onPressed: () {
@@ -979,20 +981,20 @@ List photoListOfGallery = [];
       ExternalAttachmentPost();
       SaveExternalDictationOrAttachment saveDictationAttachments =
       await apiAttachmentPostServices.postApiServiceMethod(
-          int.parse(practiceId)??null,//selectedPracticeId
-          int.parse(LocationId)??null,//locationId
-          int.parse(providerId1)??null,//providerId
+          practiceId!=null?int.parse(practiceId):null,
+          LocationId!=null?int.parse(LocationId):null,
+          providerId1!=null?int.parse(providerId1):null,
           firstname.text,//patientFname
           lastname.text,//patientLname
           _dateOfbirthController.text,//patientDob
           memberId,
-          documenttypeId,
+          documenttypeId!=null?(documenttypeId):null,
           emergencyAddOn,
           Description.text,
           null,//convertedImg,
           null,
           null,
-          photoListOfGallery
+          photoListOfGallery ?? null
       );
       statusCode = saveDictationAttachments?.header?.statusCode;
       //printing status code
@@ -1024,21 +1026,20 @@ List photoListOfGallery = [];
     await DatabaseHelper.db.insertExternalAttachmentData(
       ExternalAttachmentList(
         // externalattachmentid: extId ?? null,
-        practiceid: int.parse(practiceId),
-        practicename: selectedPractice2,
-        locationid: int.parse(LocationId),
+        practiceid:practiceId!=null ? int.parse(practiceId):null,
+        practicename: selectedPractice2??null,
+        locationid: LocationId!=null ? int.parse(LocationId):null,
         locationname: selectedLocation,
         providerid: providerId1!=null ? int.parse(providerId1):null,
-        providername: selectedProvidername,
-        externaldocumenttype: selecteddocumnettype,
-        externaldocumenttypeid: documenttypeId,
-        patientfirstname: firstname.text,
-        patientlastname: lastname.text,
-        patientdob: _dateOfbirthController.text,
+        providername: selectedProvidername??null,
+        externaldocumenttype: selecteddocumnettype!=null? (selecteddocumnettype):null,
+        externaldocumenttypeid: documenttypeId!=null ? (documenttypeId):null,
+        patientfirstname: firstname.text??null,
+        patientlastname: lastname.text??null,
+        patientdob: _dateOfbirthController.text??null,
         isemergencyaddon: toggleVal ?? false,
-        description: Description.text,
-        displayfilename:
-        selecteddocumnettype + "_" + memberId + "_" + formattedDate,
+        description: Description.text??null,
+        displayfilename: selecteddocumnettype??"null"+ "_" + memberId+ "_" + formattedDate,
         uploadedtoserver: uploadedToServerTrue,
       ),
     );
@@ -1047,7 +1048,7 @@ List photoListOfGallery = [];
     if(localExternalAttachmentId>0){
      // print('inserting images of locAttachment $localExternalAttachmentId');
       final String formatted = formatter.format(now);
-      int photoResult = await DatabaseHelper.db.insertPhotoLists(PhotoList(
+      int photoResult = await DatabaseHelper.db.ExternalinsertPhotoList(PhotoList(
         // id: localExternalAttachmentId,
           externalattachmentlocalid: localExternalAttachmentId,
           attachmentname: '${firstname.text ?? ''}_${formatted}_${basename(image.path)}',
@@ -1055,7 +1056,7 @@ List photoListOfGallery = [];
           attachmenttype: AppStrings.imageFormat,
           physicalfilename: '${image?.path}')
       );
-      print('photoResult $photoResult of locAttachment $localExternalAttachmentId');
+     //git  print('photoResult $photoResult of locAttachment $localExternalAttachmentId');
     }
 
   }
@@ -1069,20 +1070,20 @@ List photoListOfGallery = [];
     int localExternalAttachmentId= await DatabaseHelper.db.insertExternalAttachmentData(
         ExternalAttachmentList(
 
-          practiceid: int.parse(practiceId),
-          practicename: selectedPractice2,
+          practiceid:practiceId!=null ? int.parse(practiceId):null,
+          practicename: selectedPractice2??null,
           locationid: LocationId!=null ? int.parse(LocationId):null,
-          locationname: selectedLocation,
+          locationname: selectedLocation??null,
           providerid: providerId1!=null ? int.parse(providerId1):null,
-          providername: selectedProvidername,
-          externaldocumenttype: selecteddocumnettype,
-          externaldocumenttypeid: documenttypeId,
-          patientfirstname: firstname.text,
-          patientlastname: lastname.text,
-          patientdob: _dateOfbirthController.text,
+          providername: selectedProvidername??null,
+          externaldocumenttype: selecteddocumnettype!=null ? (selecteddocumnettype):null,
+          externaldocumenttypeid: documenttypeId!=null?(documenttypeId):null,
+          patientfirstname: firstname.text??null,
+          patientlastname: lastname.text??null,
+          patientdob: _dateOfbirthController.text??null,
           isemergencyaddon: toggleVal ?? false,
-          description: Description.text,
-          displayfilename: selecteddocumnettype + "_" + memberId + "_" + formattedDate,
+          description: Description.text??null,
+          displayfilename: selecteddocumnettype??'null'+ "_" + memberId+ "_" + formattedDate,
           uploadedtoserver: uploadedToServerFalse,
         )
     );
@@ -1091,14 +1092,14 @@ List photoListOfGallery = [];
     if(localExternalAttachmentId>0){
       //print('inserting images of locAttachment $localExternalAttachmentId');
       final String formatted = formatter.format(now);
-      int photoResult = await DatabaseHelper.db.insertPhotoLists(PhotoList(
+      int photoResult = await DatabaseHelper.db.ExternalinsertPhotoList(PhotoList(
         // id: localExternalAttachmentId,
           externalattachmentlocalid: localExternalAttachmentId,
           attachmentname: '${firstname.text ?? ''}_${formatted}_${basename(image?.path)}',
           createddate: '$now',
           attachmenttype: AppStrings.imageFormat,
           physicalfilename: '${image?.path}'));
-      print('photoResult $photoResult of locAttachment $localExternalAttachmentId');
+     // print('photoResult $photoResult of locAttachment $localExternalAttachmentId');
     }
   }
 
@@ -1111,21 +1112,20 @@ List photoListOfGallery = [];
     String formattedDate = DateFormat(AppStrings.currentdate_text).format(now);
     int localExternalAttachmentId= await DatabaseHelper.db.insertExternalAttachmentData(
         ExternalAttachmentList(
-          practiceid: int.parse(practiceId),
-          practicename: selectedPractice2,
+          practiceid:practiceId!=null ? int.parse(practiceId):null,
+          practicename: selectedPractice2!=null ? selectedPractice2:null,
           locationid: LocationId!=null ? int.parse(LocationId):null,
-          locationname: selectedLocation,
+          locationname: selectedLocation!=null ? selectedLocation:null,
           providerid: providerId1!=null ? int.parse(providerId1):null,
-          providername: selectedProvidername,
-          externaldocumenttype:
-          selecteddocumnettype,
-          externaldocumenttypeid: documenttypeId,
-          patientfirstname: firstname.text,
-          patientlastname: lastname.text,
-          patientdob: _dateOfbirthController.text,
+          providername: selectedProvidername!=null ? selectedProvidername:null,
+          externaldocumenttype: selecteddocumnettype!=null ? selecteddocumnettype:null,
+          externaldocumenttypeid: documenttypeId!=null?documenttypeId:null,
+          patientfirstname: firstname.text??null,
+          patientlastname: lastname.text??null,
+          patientdob: _dateOfbirthController.text??null,
           isemergencyaddon: toggleVal ?? false,
-          description: Description.text,
-          displayfilename: selecteddocumnettype + "_" + memberId + "_" + formattedDate,
+          description: Description.text??null,
+          displayfilename: selecteddocumnettype + "_" + memberId+ "_" + formattedDate,
           uploadedtoserver: uploadedToServerFalse,
         ));
     //----------gallery images insert to db
@@ -1134,7 +1134,7 @@ List photoListOfGallery = [];
       // print('inserting images of locAttachment $localExternalAttachmentId');
       final String formatted = formatter.format(now);
       for (int i = 0; i < paths.values.toList().length; i++) {
-        int photoResult = await DatabaseHelper.db.insertPhotoLists(PhotoList(
+        int photoResult = await DatabaseHelper.db.ExternalinsertPhotoList(PhotoList(
           // id: localExternalAttachmentId,
             externalattachmentlocalid: localExternalAttachmentId,
             attachmentname:
@@ -1142,7 +1142,7 @@ List photoListOfGallery = [];
             createddate: '$now',
             attachmenttype: AppStrings.imageFormat,
             physicalfilename: '${paths.values.toList()[i]}'));
-        print('_saveGalleryImagesToserver photoResult $photoResult of locAttachment $localExternalAttachmentId');
+       // print('_saveGalleryImagesToserver photoResult $photoResult of locAttachment $localExternalAttachmentId');
       }
     }
   }
@@ -1157,40 +1157,43 @@ List photoListOfGallery = [];
     int localExternalAttachmentId = await DatabaseHelper.db.insertExternalAttachmentData(
         ExternalAttachmentList(
           // externalattachmentid: extId ?? null,
-          practiceid: int.parse(practiceId),
-          practicename: selectedPractice2,
+          practiceid:practiceId!=null ? int.parse(practiceId):null,
+          practicename: selectedPractice2??null,
           locationid: LocationId!=null ? int.parse(LocationId):null,
-          locationname: selectedLocation,
+          locationname: selectedLocation??null,
           providerid: providerId1!=null ? int.parse(providerId1):null,
-          providername: selectedProvidername,
-          externaldocumenttype: selecteddocumnettype,
-          externaldocumenttypeid: documenttypeId,
-          patientfirstname: firstname.text,
-          patientlastname: lastname.text,
-          patientdob: _dateOfbirthController.text,
+          providername: selectedProvidername??null,
+          externaldocumenttype: selecteddocumnettype??null,
+          externaldocumenttypeid: documenttypeId??null,
+          patientfirstname: firstname.text??null,
+          patientlastname: lastname.text??null,
+          patientdob: _dateOfbirthController.text??null,
           isemergencyaddon: toggleVal ?? false,
-          description: Description.text,
-          displayfilename: selecteddocumnettype + "_" + memberId + "_" + formattedDate,
+          description: Description.text ?? null,
+          displayfilename: selecteddocumnettype + "_" + memberId+ "_" + formattedDate,
           uploadedtoserver: uploadedToServerTrue
         ));
     //---------------------gallery images insert to db
 
-    if(localExternalAttachmentId>0){
+    if(localExternalAttachmentId>0) {
       final String formatted = formatter.format(now);
-      for (int i = 0; i < paths.values.toList().length; i++) {
-
-        int photoResult = await DatabaseHelper.db.insertPhotoLists(PhotoList(
+      for (int i = 0; i < paths.values
+          .toList()
+          .length; i++) {
+        int photoResult = await DatabaseHelper.db.ExternalinsertPhotoList(PhotoList(
           // id: localExternalAttachmentId,
             externalattachmentlocalid: localExternalAttachmentId,
             attachmentname:
-            '${firstname.text ?? ''}_${formatted}_${basename('${paths.values.toList()[i]}')}',
+            '${firstname.text ?? ''}_${formatted}_${basename(
+                '${paths.values.toList()[i]}')}',
             createddate: '$now',
             attachmenttype: AppStrings.imageFormat,
             physicalfilename: '${paths.values.toList()[i]}'));
 
         final bytes = File('${paths.values.toList()[i]}').readAsBytesSync();
         String galleryImages = base64Encode(bytes);
-        name='${firstname.text ?? ''}_${formatted}_${basename('${paths.values.toList()[i]}')}';
+        name = '${firstname.text ?? ''}_${formatted}_${basename(
+            '${paths.values.toList()[i]}')}';
         photoListOfGallery.add(
             {
               "header": {
@@ -1204,6 +1207,7 @@ List photoListOfGallery = [];
             }
         );
       }
+    }
       try {
         if (toggleVal == 0) {
           emergencyAddOn = false;
@@ -1215,20 +1219,23 @@ List photoListOfGallery = [];
         ExternalAttachmentPost();
         SaveExternalDictationOrAttachment saveDictationAttachments =
         await apiAttachmentPostServices.postApiServiceMethod(
-            int.parse(practiceId)??null,//selectedPracticeId
-            int.parse(LocationId)??null,//locationId
-            int.parse(providerId1)??null,//providerId
+          practiceId!=null?int.parse(practiceId):null,
+            LocationId!=null?int.parse(LocationId):null,
+            providerId1!=null?int.parse(providerId1):null,
+            //int.parse(practiceId) ?? null,//selectedPracticeId
+           // int.parse(LocationId) ?? null,//locationId
+           // int.parse(providerId1) ?? null,//providerId
             firstname.text,//patientFname
             lastname.text,//patientLname
             _dateOfbirthController.text,//patientDob
-            memberId,
-            documenttypeId,
-            emergencyAddOn,
-            Description.text,
+            memberId??null,
+            documenttypeId!=null?(documenttypeId):null,
+            emergencyAddOn??null,
+            Description.text??null,
             null,
             null,
             null,
-            photoListOfGallery
+            photoListOfGallery??null
         );
         statusCode = saveDictationAttachments?.header?.statusCode;
         //printing status code
@@ -1239,9 +1246,5 @@ List photoListOfGallery = [];
       catch (e) {
         print('SaveAttachmentDictation exception ${e.toString()}');
       }
-      // }
-
-
-    }
+   }
   }
-}

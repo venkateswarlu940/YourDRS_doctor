@@ -72,16 +72,16 @@ class RouteGenerator {
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => ViewImages(),
-        );
+       );
       case ExternalAttachments.routeName:
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => ExternalAttachments(),
         );
-      case Externalattachmnet_server.routeName:
+      case ExternalAttachmentScreen.routeName:
         return MaterialPageRoute(
           settings: settings,
-          builder: (_) => Externalattachmnet_server(),
+          builder: (_) => ExternalAttachmentScreen(),
         );
       case Externalattachment_data.routeName:
         return MaterialPageRoute(

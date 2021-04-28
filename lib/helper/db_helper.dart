@@ -57,6 +57,7 @@ class DatabaseHelper {
         AppStrings.col_attachmentSizeBytes: newAudio.attachmentSizeBytes,
         AppStrings.col_attachmentType: newAudio.attachmentType,
         AppStrings.col_MemberId: newAudio.memberId,
+        AppStrings.col_AttachmentName:newAudio.attachmentName,
         AppStrings.col_StatusId: newAudio.statusId,
         AppStrings.col_UploadedToServer: newAudio.uploadedToServer,
         AppStrings.col_DisplayFileName: newAudio.displayFileName,
@@ -120,7 +121,9 @@ class DatabaseHelper {
       print('insertExternalAttachment ${e.toString()}');
     }
   }
-  Future<int> insertPhotoLists(PhotoList photoList) async {
+
+  Future<int> ExternalinsertPhotoList(PhotoList photoList) async {
+
     var db = await database;
 
 //exception handling
@@ -140,6 +143,7 @@ class DatabaseHelper {
     } catch (e) {
       print('insertPhotoList ${e.toString()}');
     }
+
     return -1;
   }
 
@@ -162,25 +166,27 @@ class DatabaseHelper {
         AppStrings.col_PhotoListAttachmentFileName: photoList.fileName,
         AppStrings.col_PhotoListAttachmentPhysicalFileName:
             photoList.physicalfilename,
-        AppStrings.col_PhotoListAttachmentCreatedDate: photoList.createddate
+        AppStrings.col_PhotoListAttachmentCreatedDate: photoList.createddate,
+        AppStrings.col_UploadedToServer:photoList.uploadToServer,
       });
       return externalPhotoListId;
     } catch (e) {
       print('insertPhotoList ${e.toString()}');
     }
+
   }
   //external photo list table
 
 
   ///Delete all older records
-  deleteAllOlderRecords() async {
+  Future<int> deleteAllOlderRecords() async {
     var db = await database;
     try {
-      var res = await db.rawDelete(AppStrings.deleteOlderRecords);
-      return res;
+      return await db.rawDelete(AppStrings.deleteOlderRecords);
     } catch (e) {
       print(e.toString());
     }
+    return -1;
   }
 
   ///-----------delete all older External Records From Local Db
@@ -194,26 +200,86 @@ class DatabaseHelper {
     }
   }
 
+  ///sync offline data to server
+  Future<List<Map<String, dynamic>>> queryUnsynchedRecords() async {
+    var db = await database;
+    try {
+      return await db.rawQuery(AppStrings.syncRecordsToServer);
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+
+  ///update synced records in the db
+  Future<int> updateRecords(uploadedtoserver,dictationId, int rowId) async {
+    var db = await database;
+    try {
+      var res = await db.rawUpdate(AppStrings.updateOfflineRecords, [uploadedtoserver, dictationId, rowId]);
+      return res;
+    } catch (e) {
+      print(e.toString());
+    }
+    return -1;
+  }
+
+//....sync offline images data
+  Future<List<Map<String, dynamic>>> queryUnsynchedImages(int episodeId, int appointmentId) async {
+    var db = await database;
+    try {
+      return await db.rawQuery('SELECT *  FROM dictationlocal WHERE uploadedtoserver = 1 and episodeid=$episodeId and appointmentid=$appointmentId ');
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  //...sync offline images
+  Future<List<Map<String, dynamic>>> queryUnsynchedImageRecords(int id, int offlineUploadedToServer) async {
+    var db = await database;
+    try {
+      return await db.rawQuery('SELECT * FROM photolistlocal  WHERE uploadedtoserver = $offlineUploadedToServer AND dictationlocalid=$id');
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+  ///update synced records in table
+  Future<int> updateImageRecords(uploadedtoserver) async {
+    var db = await database;
+    try {
+      // var res = await db.rawUpdate('UPDATE dictationlocal SET uploadedtoserver = $uploadedtoserver, dictationid = $dictationId, WHERE id = $rowId');
+      var res = await db.rawUpdate('''
+    UPDATE photolistlocal 
+    SET uploadedtoserver = ?
+    ''', [uploadedtoserver]);
+      // var res = await db.rawUpdate(AppStrings.updateSyncedRecords);
+      return res;
+    } catch (e) {
+      print(e.toString());
+    }
+    return -1;
+  }
+
 //get all images
-  Future<List<PhotoList>> getAllImages(int Id) async {
+  Future<List<PhotoList>> getAllImages(int id) async {
     var db = await database;
 
     //Exception handling
     try {
       var res = await db
-          .rawQuery("SELECT physicalfilename FROM photolistlocal WHERE id=$Id");
+          .rawQuery("SELECT physicalfilename FROM photolistlocal where dictationlocalid=$id ");
       List<PhotoList> list = res.isNotEmpty
           ? res.map((c) {
-              var user = PhotoList.fromMap(c);
-              return user;
-            }).toList()
+        var user = PhotoList.fromMap(c);
+        return user;
+      }).toList()
           : [];
-      print(list);
       return list;
     } catch (e) {
       print(e.toString());
     }
   }
+
 
   Future<List<PatientDictation>> getId(int episodeId, int appointmentId) async {
     var db = await database;
@@ -230,7 +296,6 @@ class DatabaseHelper {
               return user;
             }).toList()
           : [];
-      print(list);
       return list;
     } catch (e) {
       print(e.toString());
@@ -312,7 +377,6 @@ class DatabaseHelper {
   Future<List<PhotoList>> getAttachmentImages(int id) async {
     List<dynamic> resultt;
     var db = await database;
-
     //Exception handling
     try {
       resultt = await db.rawQuery(
@@ -331,7 +395,6 @@ class DatabaseHelper {
   }
 
   ///get all external attachments
-
   Future<List<ExternalAttachmentList>> getAllExtrenalAttachmentList() async {
     var db = await database;
     var id;
@@ -351,16 +414,27 @@ class DatabaseHelper {
     }
   }
 
-  //...sync offline data to server
-  Future<List<Map<String, dynamic>>> queryUnsynchedRecords() async {
-    Database db = await database;
-    return await db
-        .rawQuery('SELECT * FROM dictationlocal WHERE uploadedtoserver = 0');
+  ///update synced records in the db
+  Future<int> updateExternalAttachmentRecord(uploadedtoserver, externalAttachmentId, int rowId) async {
+    var db = await database;
+    try {
+      // var res = await db.rawUpdate('UPDATE dictationlocal SET uploadedtoserver = $uploadedtoserver, dictationid = $dictationId, WHERE id = $rowId');
+      var res = await db.rawUpdate('''
+    UPDATE externalattachmentlocal 
+    SET uploadedtoserver = ?, externalattachmentid = ? 
+    WHERE id = ?
+    ''', [uploadedtoserver, externalAttachmentId, rowId]);
+      // var res = await db.rawUpdate(AppStrings.updateSyncedRecords);
+      return res;
+    } catch (e) {
+      print(e.toString());
+    }
+    return -1;
   }
 
 //close the db
-  // db.close();
   Future close() async {
     return await db.close();
   }
+
 }

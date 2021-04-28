@@ -1,8 +1,8 @@
 import 'dart:convert';
-
 import 'package:YOURDRS_FlutterAPP/blocs/dictation_screen/audio_dictation_bloc.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_strings.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_text.dart';
 import 'package:YOURDRS_FlutterAPP/network/models/dictation_type/dictation_type_surgery.dart';
 import 'package:YOURDRS_FlutterAPP/ui/audio_dictations/audio_manual_dictation.dart';
 import 'package:YOURDRS_FlutterAPP/ui/patient_dictation/audio_dictation.dart';
@@ -28,10 +28,8 @@ class MicButtonForManualDictation extends StatefulWidget {
       descp,
       convertedImg;
   final List arrayOfImages;
-
   final int practiceId, providerId, locationId, docType, appointmentType;
   final int emergency;
-
   const MicButtonForManualDictation({
     Key key,
     this.patientFName,
@@ -55,7 +53,6 @@ class MicButtonForManualDictation extends StatefulWidget {
     this.convertedImg,
     this.arrayOfImages,
   }) : super(key: key);
-
   @override
   _MicButtonForManualDictationState createState() =>
       _MicButtonForManualDictationState();
@@ -66,7 +63,7 @@ class _MicButtonForManualDictationState
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
-    final width = MediaQuery.of(context).size.width;
+    // ignore: deprecated_member_use
     return FlatButton(
       padding: EdgeInsets.symmetric(
           vertical: MediaQuery.of(context).size.height / 100),
@@ -82,7 +79,6 @@ class _MicButtonForManualDictationState
         //             dictTypeId: widget.patientFName,
         //             patientFName: widget.patientLName,
         //             caseNumber: ""),
-
         //         /// calling the audio dictation class from ui folder
         //         child: ManualAudioDictation(
         //           practiceName: widget.practiceName,
@@ -124,13 +120,13 @@ class _MicButtonForManualDictationState
 
                     /// calling the audio dictation class from ui folder
                     child: ManualAudioDictation(
-                      practiceName: widget.practiceName,
-                      practiceId: widget.practiceId,
-                      locationName: widget.locationName,
+                      practiceName: widget.practiceName ?? null,
+                      practiceId: widget.practiceId ?? null,
+                      locationName: widget.locationName ?? null,
                       convertedImg: widget.convertedImg,
-                      locationId: widget.locationId,
-                      providerName: widget.providerName,
-                      providerId: widget.providerId,
+                      locationId: widget.locationId ?? null,
+                      providerName: widget.providerName ?? null,
+                      providerId: widget.providerId ?? null,
                       patientFName: widget.patientFName,
                       patientLName: widget.patientLName,
                       patientDob: widget.patientDob,
@@ -149,7 +145,10 @@ class _MicButtonForManualDictationState
                 )
               ],
               cancelButton: CupertinoActionSheetAction(
-                child: const Text(AppStrings.cancel),
+                child: const Text(
+                  AppStrings.cancel,
+                  style: TextStyle(fontFamily: AppFonts.regular),
+                ),
                 //isDefaultAction: true,
                 isDestructiveAction: true,
                 onPressed: () {
@@ -175,16 +174,12 @@ class _MicButtonForManualDictationState
 }
 
 ////used in Patient Details Screens
-
 class AudioMicButtons extends StatefulWidget {
   final String patientFName;
   final String patientLName;
   final String caseId;
   final String patientDob;
-  // dictationTypeId;
-  final int attachmentSizeBytes;
-  // ignore: non_constant_identifier_names
-  final String appointment_type;
+  final String appointmentType;
   final String physicalPath;
   final int practiceId;
   final int statusId;
@@ -196,12 +191,9 @@ class AudioMicButtons extends StatefulWidget {
       this.patientFName,
       this.patientLName,
       this.patientDob,
-      // this.dictationTypeId,
       this.caseId,
-      // ignore: non_constant_identifier_names
-      this.appointment_type,
+      this.appointmentType,
       this.physicalPath,
-      this.attachmentSizeBytes,
       this.practiceId,
       this.statusId,
       this.episodeId,
@@ -211,9 +203,11 @@ class AudioMicButtons extends StatefulWidget {
   @override
   _AudioMicButtonsState createState() => _AudioMicButtonsState();
 }
+
 class _AudioMicButtonsState extends State<AudioMicButtons> {
   var _currentSelectedValue;
   var dictationTypeId;
+  // ignore: deprecated_member_use
   List<DictationTypeSurgery> data = List(); //edited line
   //for surgery appointment type
   loadDictationTypeSurgery() async {
@@ -224,16 +218,18 @@ class _AudioMicButtonsState extends State<AudioMicButtons> {
         jsonResult.map((x) => DictationTypeSurgery.fromJson(x)));
     setState(() {});
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     loadDictationTypeSurgery();
   }
+
   @override
   Widget build(BuildContext cntxt) {
-    bool isStarted = false;
     final height = MediaQuery.of(context).size.height;
     final width = MediaQuery.of(context).size.width;
+    // ignore: deprecated_member_use
     return FlatButton(
       padding: EdgeInsets.symmetric(
           vertical: MediaQuery.of(context).size.height / 100),
@@ -247,9 +243,12 @@ class _AudioMicButtonsState extends State<AudioMicButtons> {
           context: cntxt,
           title: AppStrings.dictType,
           content: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                color: CustomizedColors.alertColor,
+              ),
               padding: EdgeInsets.symmetric(
                   horizontal: MediaQuery.of(context).size.width / 10),
-              color: CustomizedColors.alertColor,
               height: height * 0.09,
               width: width * 0.65,
               child: FormField<String>(
@@ -262,7 +261,7 @@ class _AudioMicButtonsState extends State<AudioMicButtons> {
                       Navigator.of(context, rootNavigator: true).pop();
                       showCupertinoModalPopup(
                         context: context,
-                        barrierDismissible: false,
+                        //   barrierDismissible: false,
                         builder: (BuildContext context) {
                           return CupertinoActionSheet(
                             actions: [
@@ -282,11 +281,10 @@ class _AudioMicButtonsState extends State<AudioMicButtons> {
                                     patientDob: widget.patientDob,
                                     caseNum: widget.caseId,
                                     dictationTypeName: _currentSelectedValue,
-                                    appointmentType: widget.appointment_type,
+                                    appointmentType: widget.appointmentType,
                                     episodeAppointmentRequestId:
                                         widget.episodeAppointmentRequestId,
                                     episodeId: widget.episodeId,
-                                    onlineStatusId: widget.statusId,
                                     dictationTypeId: dictationTypeId,
                                   ),
                                 ),
@@ -309,10 +307,13 @@ class _AudioMicButtonsState extends State<AudioMicButtons> {
                         });
                       });
                     },
-                    items: getList(widget.appointment_type).map((value) {
+                    items: getList(widget.appointmentType).map((value) {
                       return DropdownMenuItem<String>(
                         value: value.dictationtype,
-                        child: Text(value.dictationtype),
+                        child: Text(
+                          value.dictationtype,
+                          style: TextStyle(fontFamily: AppFonts.regular),
+                        ),
                       );
                     }).toList(),
                   );
@@ -323,8 +324,10 @@ class _AudioMicButtonsState extends State<AudioMicButtons> {
               color: CustomizedColors.alertCancelColor,
               child: Text(
                 AppStrings.dialogCancel,
-                style:
-                    TextStyle(color: CustomizedColors.textColor, fontSize: 20),
+                style: TextStyle(
+                    color: CustomizedColors.textColor,
+                    fontSize: 20,
+                    fontFamily: AppFonts.regular),
               ),
               onPressed: () {
                 Navigator.of(context, rootNavigator: true).pop();
@@ -338,7 +341,7 @@ class _AudioMicButtonsState extends State<AudioMicButtons> {
         height: 80,
         width: 80,
         decoration: BoxDecoration(
-            color: CustomizedColors.circleAvatarColor,
+            color: CustomizedColors.blueAppBarColor,
             borderRadius: BorderRadius.circular(50)),
         child: Icon(
           Icons.mic,
@@ -348,6 +351,7 @@ class _AudioMicButtonsState extends State<AudioMicButtons> {
       ),
     );
   }
+
   //for checking surgery and non surgery appointment type
   List<DictationTypeSurgery> getList(String appointmentType) {
     if (appointmentType == AppStrings.appointmentTypeSurgery) {

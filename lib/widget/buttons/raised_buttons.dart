@@ -1,4 +1,5 @@
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_text.dart';
 import 'package:flutter/material.dart';
 
 //stateless Widget for Common Raised Button
@@ -11,14 +12,20 @@ class RaisedButtons extends StatelessWidget {
     return RaisedButton(
       color: CustomizedColors.signInButtonColor,
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.25,
-        height: MediaQuery.of(context).size.width *0.15,
-        padding: EdgeInsets.all(18.0),
-        child: Text(
-          text,
-          style: TextStyle(
-              color: CustomizedColors.signInButtonTextColor, fontSize: 18),
-          textAlign: TextAlign.center,
+        width: MediaQuery.of(context).size.width * 0.20,
+        height: MediaQuery.of(context).size.width * 0.11,
+        // padding:EdgeInsets.only(top: MediaQuery.of(context).size.height *0.02),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              text,
+              style: TextStyle(
+                  color: CustomizedColors.signInButtonTextColor, fontSize: 18,fontFamily: AppFonts.regular),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
       onPressed: onPressed,
@@ -40,15 +47,15 @@ class RaisedButtonCustom extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RaisedButton(
-      elevation: 3,
+      elevation: 1.8,
       color: buttonColor,
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.85,
-        height: 60,
+        width: MediaQuery.of(context).size.width * 0.95,
+        height: 57,
         padding: EdgeInsets.all(18.0),
         child: Text(
           text,
-          style: TextStyle(color: textColor, fontSize: 16),
+          style: TextStyle(color: textColor, fontSize: 16,fontFamily: AppFonts.regular),
           textAlign: TextAlign.center,
         ),
       ),
@@ -74,9 +81,8 @@ class RaisedBttn extends StatelessWidget {
         width: MediaQuery.of(context).size.width * 0.45,
         padding: EdgeInsets.all(18.0),
         child: Text(
-          text,
-          style: TextStyle(
-            fontSize: 17,
+          text, style: TextStyle(
+            fontSize: 14,fontFamily: AppFonts.regular,
             fontWeight: FontWeight.bold,
           ),
           textAlign: TextAlign.center,
@@ -112,7 +118,7 @@ class RaisedBtn1 extends StatelessWidget {
               child: Text(
                 '$text ($count)',
                 style: TextStyle(
-                    color: CustomizedColors.raisedButtonTextColor,
+                    color: CustomizedColors.raisedButtonTextColor,fontFamily: AppFonts.regular,
                     fontSize: 20),
                 textAlign: TextAlign.center,
               ))
@@ -124,7 +130,7 @@ class RaisedBtn1 extends StatelessWidget {
                 '$text ($count)',
                 style: TextStyle(
                     color: CustomizedColors.raisedButtonTextColor,
-                    fontSize: 20,
+                    fontSize: 20,fontFamily: AppFonts.regular,
                     fontWeight: FontWeight.w500),
                 textAlign: TextAlign.center,
               ))),
@@ -161,7 +167,7 @@ class RaisedBtn extends StatelessWidget {
                   Text(
                     text,
                     style: TextStyle(
-                        color: CustomizedColors.primaryColor, fontSize: 20),
+                        color: CustomizedColors.primaryColor, fontSize: 20,fontFamily: AppFonts.regular),
                     textAlign: TextAlign.center,
                   )
                 ],

@@ -52,7 +52,7 @@ class PatientAppointmentBlocState extends BaseBlocState {
   List<Object> get props => [
         this.isLoading,
         this.errorMsg,
-        this.users,
+        // this.users,
         this.keyword,
         this.patients,
         this.hasReachedMax

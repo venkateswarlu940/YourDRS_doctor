@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:YOURDRS_FlutterAPP/network/models/login/login_model.dart';
 import 'package:YOURDRS_FlutterAPP/network/repo/local/preference/local_storage.dart';
 import 'package:YOURDRS_FlutterAPP/network/services/login/login_service.dart';
@@ -22,7 +23,17 @@ class LoginBloc extends Bloc<FormScreenEvent, FormScreenState> {
     try {
       if (event is FormScreenEvent) {
         AuthenticateUser authenticateUser =
-            await services.LoginpostApiMethod(event.email, event.password);
+            await services.LoginpostApiMethod(event.email, event.password).catchError((
+                onError) {
+              if (onError is SocketException){
+                print("internet not available");
+              }
+              else if (onError is TimeoutException){
+                print("server timeout");
+              }
+              else
+                print("something went wrong!!");
+            });
 
         bool isPinAvailable;
 

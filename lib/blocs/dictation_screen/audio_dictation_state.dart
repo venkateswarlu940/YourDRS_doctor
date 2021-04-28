@@ -51,14 +51,14 @@ class AudioDictationState extends BaseBlocState {
       String attachmentContentType,
       String attachmentContent}) {
     return new AudioDictationState(
-        errorMsg: errorMsg ?? this.errorMsg,
+        errorMsg: errorMsg /*?? this.errorMsg*/,
         current: current ?? this.current,
         currentStatus: currentStatus ?? this.currentStatus,
         viewVisible: viewVisible ?? this.viewVisible,
         duration: duration ?? this.duration,
         attachmentContentType:
             attachmentContentType ?? this.attachmentContentType,
-        attachmentContent: attachmentContent /*?? this.attachmentContent*/);
+        attachmentContent: attachmentContent ?? this.attachmentContent);
   }
 
   @override

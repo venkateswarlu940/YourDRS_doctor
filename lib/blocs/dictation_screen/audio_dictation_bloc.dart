@@ -8,14 +8,14 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdftron_flutter/pdftron_flutter.dart';
 
 class AudioDictationBloc extends Bloc<AudioDictationEvent, AudioDictationState> {
   final String patientFName,patientLName ,dictTypeId, caseNumber,appointmentType;
-  final int audioSizeBytes;
   FlutterAudioRecorder _recorder;
   Timer _timer;
   var finalPath;
-  AudioDictationBloc({this.patientFName, this.patientLName,this.appointmentType,this.dictTypeId, this.caseNumber, this.audioSizeBytes}) : super(AudioDictationState.initial());
+  AudioDictationBloc({this.patientFName, this.patientLName,this.appointmentType,this.dictTypeId, this.caseNumber}) : super(AudioDictationState.initial());
   @override
   Stream<AudioDictationState> mapEventToState(
       AudioDictationEvent event,
@@ -50,7 +50,9 @@ class AudioDictationBloc extends Bloc<AudioDictationEvent, AudioDictationState> 
         final DateTime now = DateTime.now();
         final DateFormat formatter = DateFormat(AppConstants.dateFormat);
         final String formatted = formatter.format(now);
-        String customName = '${dictTypeId}_${patientFName}_${caseNumber}_$formatted';
+        String customName = '${dictTypeId}_${patientFName}_${caseNumber}_$formatted'
+            '_${now.microsecondsSinceEpoch}';
+        print('_init File path $customName');
         Directory appDocDirectory;
         //platform checking conditions
         if (Platform.isIOS) {
@@ -59,7 +61,7 @@ class AudioDictationBloc extends Bloc<AudioDictationEvent, AudioDictationState> 
           appDocDirectory = await getExternalStorageDirectory();
         }
         /// can add extension like ".mp4" ".wav" ".m4a" ".aac"
-        String customPath = appDocDirectory.path + '/' + customName + DateTime.now().microsecondsSinceEpoch.toString() + '.mp4';
+        String customPath = appDocDirectory.path + '/' + customName + '.mp4';
         /// .wav <---> AudioFormat.WAV
         /// .mp4 .m4a .aac <---> AudioFormat.AAC
         /// AudioFormat is optional, if given value, will overwrite path extension when there is conflicts.
@@ -163,6 +165,7 @@ class AudioDictationBloc extends Bloc<AudioDictationEvent, AudioDictationState> 
       if(recorderStatus == RecordingStatus.Recording || recorderStatus == RecordingStatus.Paused){
         var result = await _recorder.stop();
         finalPath = result.path;
+        print('Path.... $finalPath');
         List<int> fileBytes = await File(finalPath).readAsBytes();
         String base64String = base64Encode(fileBytes);
         print("${base64String.length}");

@@ -33,21 +33,15 @@ class PatientBloc
     try {
       if (event is GetSchedulePatientsList) {
         if(state.hasReachedMax && event.pageKey!=1){
-          return;
+          return ;
         }
 
         if (event.pageKey == 1) {
           yield state.reset();
         }
-        
-
         yield state.copyWith(
           isLoading: true,
         );
-        // yield state.copyWith(
-        //   hasReachedMax: false
-        // );
-
         List<ScheduleList> patients;
 // ----> applying the events <-----------
         var list = await Services.getSchedule(
@@ -63,7 +57,6 @@ class PatientBloc
             event.token,
             );
 // ---------> exception handling and checkiing the condition patients list is null is or empty <----
-// print('arrayLength ${list?.length} prev page ${event?.pageKey}');
 
         try {
           if (list.isEmpty) {

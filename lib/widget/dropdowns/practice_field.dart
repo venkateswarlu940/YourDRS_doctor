@@ -1,5 +1,6 @@
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_strings.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_text.dart';
 import 'package:YOURDRS_FlutterAPP/network/models/manual_dictations/practice.dart';
 import 'package:YOURDRS_FlutterAPP/network/services/schedules/appointment_service.dart';
 import 'package:YOURDRS_FlutterAPP/widget/dropdowns/searchable_dropdown.dart';
@@ -42,7 +43,14 @@ class _PracticeState extends State<PracticeDropDown>
 
   List<Widget> get appBarActions {
     return ([
-      Center(child: Text("Tabs:")),
+      Center(
+          child: Text(
+        "Tabs:",
+        style: TextStyle(
+          fontFamily: AppFonts.regular,
+          fontSize: 14,
+        ),
+      )),
       Switch(
         activeColor: Colors.white,
         value: asTabs,
@@ -60,24 +68,28 @@ class _PracticeState extends State<PracticeDropDown>
     return Container(
       width: MediaQuery.of(context).size.width * 0.95,
       child: SearchableDropdown.single(
-        closeButton: Text(
-          "",
-          style: TextStyle(fontSize: 0.1),
-        ),
         underline: Padding(padding: EdgeInsets.all(1)),
         displayClearIcon: false,
-        hint: Text(AppStrings.selectpractice_text),
+        hint: Text(AppStrings.selectpractice_text,style: TextStyle(fontFamily: AppFonts.regular,  fontSize: 14,),),
         items: data.map((item) {
           return DropdownMenuItem<PracticeList>(
               child: Text(
                 item.name ?? "",
                 overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: AppFonts.regular,
+                  fontSize: 14,
+                ),
               ),
               value: item);
         }).toList(),
         isExpanded: true,
         value: practiceList,
-        searchHint: Text('Select ', style: TextStyle(fontSize: 20)),
+        searchHint: Text('Select ',
+            style: TextStyle(
+                fontSize: 14,
+                fontFamily: AppFonts.regular,
+                fontWeight: FontWeight.bold)),
         onChanged: (value) {
           setState(() {
             _currentSelectedValue = value;

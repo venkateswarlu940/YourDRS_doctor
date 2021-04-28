@@ -1,4 +1,5 @@
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_text.dart';
 import 'package:YOURDRS_FlutterAPP/network/services/schedules/appointment_service.dart';
 import 'package:YOURDRS_FlutterAPP/widget/dropdowns/searchable_dropdown.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +44,11 @@ class _AppointmentDropDownState extends State<AppointmentDropDown>
 
   List<Widget> get appBarActions {
     return ([
-      Center(child: Text("Tabs:")),
+      Center(
+          child: Text(
+        "Tabs:",
+        style: TextStyle(fontFamily: AppFonts.regular),
+      )),
       Switch(
         activeColor: Colors.white,
         value: asTabs,
@@ -69,13 +74,12 @@ class _AppointmentDropDownState extends State<AppointmentDropDown>
       padding: const EdgeInsets.all(10),
       width: MediaQuery.of(context).size.width * 0.95,
       child: SearchableDropdown.single(
-        closeButton: Text(
-          "",
-          style: TextStyle(fontSize: 0.1),
-        ),
         displayClearIcon: false,
         //validator: (value) => value == null ? 'Cannot be empty' : null,
-        hint: Text('Appointment Type'),
+        hint: Text(
+          'Appointment Type',
+          style: TextStyle(fontFamily: AppFonts.regular, fontSize: 14),
+        ),
         // label: Text('',style: TextStyle(
         //     fontSize: 16,fontWeight: FontWeight.bold,
         //     color: Colors.black
@@ -85,6 +89,7 @@ class _AppointmentDropDownState extends State<AppointmentDropDown>
               child: Text(
                 item.name,
                 overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontFamily: AppFonts.regular,fontSize: 14),
               ),
               value: item);
         }).toList(),
@@ -94,7 +99,11 @@ class _AppointmentDropDownState extends State<AppointmentDropDown>
         ),
 
         value: appointmentTypeList,
-        searchHint: Text('Select', style: TextStyle(fontSize: 20)),
+        searchHint: Text('Select',
+            style: TextStyle(
+                fontSize: 14,
+                fontFamily: AppFonts.regular,
+                fontWeight: FontWeight.bold)),
         onChanged: (value) {
           setState(() {
             appointmentTypeList = value;

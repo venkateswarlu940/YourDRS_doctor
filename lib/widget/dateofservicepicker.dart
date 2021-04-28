@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../common/app_text.dart';
+
 class DateOfService extends StatefulWidget {
   final dosSelect;
   DateOfService({@required this.dosSelect});
@@ -61,7 +63,7 @@ class _DateOfServiceState extends State<DateOfService>
                       child: Text(_serviceDate,
                           textAlign: TextAlign.center,
                           style:
-                              TextStyle(color: CustomizedColors.accentColor)),
+                              TextStyle(color: CustomizedColors.accentColor,fontFamily: AppFonts.regular,)),
                       onTap: () {
                         _selectDate(context);
                       },

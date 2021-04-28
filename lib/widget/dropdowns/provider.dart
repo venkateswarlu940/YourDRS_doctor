@@ -1,8 +1,7 @@
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_strings.dart';
-// import 'package:searchable_dropdown/searchable_dropdown.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_text.dart';
 import 'package:YOURDRS_FlutterAPP/widget/dropdowns/searchable_dropdown.dart';
-
 import '../../network/services/schedules/appointment_service.dart';
 import '../../network/models/home/provider.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +35,6 @@ class _ProviderState extends State<ProviderDropDowns> {
   Widget build(BuildContext context) {
 
     return Container(
-      margin: MediaQuery.of(context).viewInsets,
       alignment: Alignment.center,
       padding: const EdgeInsets.all(10),
       width: MediaQuery.of(context).size.width*0.70,
@@ -44,21 +42,17 @@ class _ProviderState extends State<ProviderDropDowns> {
 // ----------> displaying Provider list from API in SearchableDropdown <--------
       child: SearchableDropdown.single(
         displayClearIcon: false,
-        
-        hint: Text(AppStrings.providerhinttxt),
-        label: Text(
-          AppStrings.providertxt,
-          style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: CustomizedColors.dropdowntxtcolor),
-        ),
+          underline: Padding(
+        padding: EdgeInsets.all(5),
+      ),
+        icon: const Icon(Icons.arrow_drop_down,color: CustomizedColors.iconColor),
+        hint: Text(AppStrings.providerhinttxt,style: TextStyle(fontFamily: AppFonts.regular,color: CustomizedColors.textColor),),
         items: _list.map((item) {
 // ----------> displaying the the data which stored in data of list type <--------
           return DropdownMenuItem<ProviderList>(
             child: Text(
               item.displayname,
-              overflow: TextOverflow.ellipsis,
+              overflow: TextOverflow.ellipsis, style: TextStyle(fontFamily: AppFonts.regular),
             ),
             value: item,
           );
@@ -66,7 +60,7 @@ class _ProviderState extends State<ProviderDropDowns> {
         isExpanded: true,
         value: providerList,
         searchHint: new Text(AppStrings.providerhinttxt,
-            style: new TextStyle(fontSize: 20)),
+            style: new TextStyle(fontSize: 20,fontFamily: AppFonts.regular),),
 // ----------> called when a new item is selected <--------
         onChanged: (value) {
           setState(() {

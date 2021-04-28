@@ -4,6 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../common/app_text.dart';
+
 class DateOfBirth extends StatefulWidget {
   final dobSelect;
   DateOfBirth({@required this.dobSelect});
@@ -63,7 +65,7 @@ class _DateOfBirthState extends State<DateOfBirth>
                       child: Text(_birthDate,
                           textAlign: TextAlign.center,
                           style:
-                              TextStyle(color: CustomizedColors.accentColor)),
+                              TextStyle(color: CustomizedColors.accentColor,fontFamily: AppFonts.regular,)),
                       onTap: () {
                         _selectDate(context);
                       },

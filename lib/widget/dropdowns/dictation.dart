@@ -1,8 +1,8 @@
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_strings.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_text.dart';
 import 'package:YOURDRS_FlutterAPP/widget/dropdowns/searchable_dropdown.dart';
 import 'package:flutter/material.dart';
-// import 'package:searchable_dropdown/searchable_dropdown.dart';
 import 'dart:async';
 import 'dart:convert';
 import '../../network/models/home/dictation.dart';
@@ -53,25 +53,23 @@ class _DictationSearchState extends State<Dictation> {
 // ----------> displaying Dictation list from API in SearchableDropdown <--------
       child: SearchableDropdown.single(
         displayClearIcon: false,
-        hint: Text(AppStrings.dictationsearchtxt),
-        label: Text(
-          AppStrings.dictationhinttxt,
-          style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: CustomizedColors.dropdowntxtcolor),
-        ),
+        icon: const Icon(Icons.arrow_drop_down,color: CustomizedColors.iconColor),
+        underline: Padding(
+        padding: EdgeInsets.all(5),
+      ),
+        hint: Text(AppStrings.dictationsearchtxt,style: TextStyle(fontFamily: AppFonts.regular,color: CustomizedColors.textColor),),
 // ----------> displaying the the data which stored in data of list type <--------
         items: data.map((item) {
           return DropdownMenuItem<DictationStatus>(
-            child: new Text(item.dictationstatus),
+            child: new Text(item.dictationstatus, overflow: TextOverflow.ellipsis,  style: TextStyle(fontFamily: AppFonts.regular),),
             value: item,
+              
           );
         }).toList(),
         value: _currentSelectedValue,
         isExpanded: true,
         searchHint: new Text(AppStrings.dictationsearchtxt,
-            style: new TextStyle(fontSize: 20)),
+            style: new TextStyle(fontSize: 20,fontFamily: AppFonts.regular)),
 // ----------> called when a new item is selected <--------
         onChanged: (value) {
           setState(

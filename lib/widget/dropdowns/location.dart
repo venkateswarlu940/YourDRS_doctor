@@ -1,5 +1,6 @@
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
 import 'package:YOURDRS_FlutterAPP/common/app_strings.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_text.dart';
 // import 'package:searchable_dropdown/searchable_dropdown.dart';
 import 'package:YOURDRS_FlutterAPP/widget/dropdowns/searchable_dropdown.dart';
 import '../../network/services/schedules/appointment_service.dart';
@@ -41,28 +42,26 @@ class _LocationState extends State<LocationDropDown> {
 
 // ----------> displaying Location list from API in SearchableDropdown <--------
       child: SearchableDropdown.single(
+              underline: Padding(
+        padding: EdgeInsets.all(5),
+      ),
         displayClearIcon: false,
-        hint: Text(AppStrings.lochinttxt),
-        label: Text(
-          AppStrings.loctext,
-          style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: CustomizedColors.dropdowntxtcolor),
-        ),
+        icon: const Icon(Icons.arrow_drop_down,color: CustomizedColors.iconColor),
+        hint: Text(AppStrings.lochinttxt,style: TextStyle(fontFamily: AppFonts.regular,color: CustomizedColors.textColor),),
+
 // ----------> displaying the the data which stored in data of list type <--------
         items: _list.map((item) {
           return DropdownMenuItem<LocationList>(
               child: Text(
                 item.locationName,
-                overflow: TextOverflow.ellipsis,
+                overflow: TextOverflow.ellipsis,style: TextStyle(fontFamily: AppFonts.regular),
               ),
               value: item);
         }).toList(),
         isExpanded: true,
         value: locationList,
         searchHint:
-            new Text(AppStrings.lochinttxt, style: new TextStyle(fontSize: 20)),
+            new Text(AppStrings.lochinttxt, style: new TextStyle(fontSize: 20,fontFamily: AppFonts.regular)),
 // ----------> called when a new item is selected <--------
         onChanged: (value) {
           setState(() {

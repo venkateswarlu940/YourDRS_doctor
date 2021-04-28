@@ -1,4 +1,5 @@
 import 'package:YOURDRS_FlutterAPP/common/app_colors.dart';
+import 'package:YOURDRS_FlutterAPP/common/app_text.dart';
 import 'package:flutter/material.dart';
 
 //stateless Widget for Common DropDown Button
@@ -17,7 +18,7 @@ class DropDown extends StatelessWidget {
   Widget build(BuildContext context) {
     return DropdownButtonHideUnderline(
       child: DropdownButton<String>(
-          hint: Text(hint),
+          hint: Text(hint,style: TextStyle(fontFamily: AppFonts.regular),),
           value: value,
           isExpanded: true,
           isDense: true,
@@ -45,7 +46,7 @@ class DropDownDictationType extends StatelessWidget {
       child: DropdownButton<String>(
           hint: Text(
             hint,
-            style: TextStyle(color: CustomizedColors.textColor),
+            style: TextStyle(color: CustomizedColors.textColor,fontFamily: AppFonts.regular),
           ),
           value: value,
           isExpanded: true,

@@ -1,17 +1,17 @@
 [
   {
-    "dictationtypeid": "1",
+    "dictationtypeid": "3",
     "dictationtype": "NBR",
     "appointmentType": "Surgery"
   },
   {
-    "dictationtypeid": "2",
+    "dictationtypeid": "1",
     "dictationtype": "OPR",
     "appointmentType": "Surgery"
   },
 
   {
-    "dictationtypeid": "3",
+    "dictationtypeid": "2",
     "dictationtype": "MR",
     "appointmentType": ""
   }

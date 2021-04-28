@@ -23,7 +23,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+ 
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -32,15 +32,12 @@ dependencies:
   # Date Formatter
   intl: any
 
-  # google fonts
-  google_fonts: ^1.1.2
-
   # Shared Preference
   shared_preferences: ^0.5.12+4
 
   # bloc
-  bloc: ^6.1.1
-  flutter_bloc: ^6.1.1
+  bloc:
+  flutter_bloc:
 
   # path
   path: any
@@ -95,7 +92,7 @@ dependencies:
   http: any
 
   # equatable
-  equatable: ^1.2.5
+  equatable:
 
   # Network client
   dio: ^3.0.10
@@ -106,17 +103,26 @@ dependencies:
   # for grouping of Scheduled List
   grouped_list: ^3.7.1
 
+  pdftron_flutter:
+    path: pdftron
 
-#pagination
+  #pagination
   pagination_view: any
+  
   webview_flutter: ^1.0.5
   
   # infinite Scroll View related Package
   infinite_scroll_pagination: ^2.3.0
+  permission_handler: '3.0.1'
+
+  cached_network_image: ^2.2.0+1
 
 dev_dependencies:
   # Flutter app icon
   flutter_launcher_icons: ^0.7.0
+
+  # Flutter list animation
+  flutter_staggered_animations:
 
   flutter_test:
     sdk: flutter
@@ -127,8 +133,7 @@ dev_dependencies:
   datetime_picker_formfield:
 
   page_transition:
-  cached_network_image:
-
+  
 # App icons
 flutter_icons:
   ios: true
@@ -177,6 +182,13 @@ flutter:
   #       - asset: fonts/TrajanPro.ttf
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
-  #
+  
+  fonts:
+    - family: NeueAlteGrotesk-Regular
+      fonts:
+        - asset: assets/fonts/NeueAlteGrotesk-Regular.ttf
+    - family: NeueAlteGrotesk-SemiBold
+      fonts:
+        - asset: assets/fonts/NeueAlteGrotesk-SemiBold.ttf
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
